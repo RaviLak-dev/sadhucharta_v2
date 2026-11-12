@@ -1,0 +1,21 @@
+{
+  "name": "daham-pasala-sadhu-charya",
+  "version": "1.0.0",
+  "description": "Daham Pasala Sadhu Charya Student Management System",
+  "main": "B_END/server.js",
+  "scripts": {
+    "start": "node B_END/server.js",
+    "test": "node B_END/test.js",
+    "postinstall": "cd B_END && npm install"
+  },
+  "keywords": [
+    "daham-pasala",
+    "buddhist-education",
+    "student-management"
+  ],
+  "author": "Daham Pasala Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

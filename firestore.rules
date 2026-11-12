@@ -1,0 +1,325 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Firebase Project: daham-pasala-sadhu-2026
+// System: Daham Pasala Sadhu Charya
+//
+// Authentication & Claims Architecture:
+//   - Users authenticate via RegNo/ID + PIN through the trusted Node.js
+//     backend (B_END), which verifies scrypt PIN hashes and mints Firebase Auth
+//     custom tokens with custom claims (users do NOT log in with email/password,
+//     so `email_verified` is not present and must NOT be required):
+//       * request.auth.token.role:     'admin' | 'teacher' | 'student'
+//       * request.auth.token.entityId: string (e.g. 'DPS/2026/104', 'TCH/2026/01', 'PRIN/2026/01')
+//       * request.auth.token.grade:    string (assigned grade for students/teachers)
+//   - All writes/mutations happen exclusively through B_END using the Firebase
+//     Admin SDK (which bypasses Security Rules). All client writes are denied.
+//   - Auth secrets (PIN hashes / credentials) MUST NEVER be stored on
+//     client-readable documents (`admins`, `teachers`, `students`); keep them
+//     server-side or in a separate private collection denied to all clients.
+//
+// Collection: admins/{docId}
+//   Fields:
+//     - id: string (required, e.g. 'PRIN/2026/01')
+//     - name: string (required)
+//     - role: string (required, display role title)
+//     - avatar: string (optional, URL)
+//     - uid: string (optional, linked Firebase Auth UID)
+//   Access: Read by signed-in admins only; all client writes denied.
+//
+// Collection: teachers/{docId}
+//   Fields:
+//     - id: string (required, e.g. 'TCH/2026/01')
+//     - name: string (required)
+//     - grade: string (required)
+//     - subject: string (optional)
+//     - phone: string (optional, PII - restricted to staff)
+//     - role: string (optional)
+//     - status: string (optional)
+//     - photo: string (optional, URL)
+//     - avatar: string (optional, URL)
+//     - uid: string (optional, linked Firebase Auth UID)
+//   Access: Read by admins and teachers; all client writes denied.
+//
+// Collection: students/{docId}
+//   Fields:
+//     - regNo: string (required, e.g. 'DPS/2026/104')
+//     - name: string (required)
+//     - englishName: string (optional)
+//     - grade: string (required)
+//     - dob: string (optional, PII)
+//     - photo: string (optional, URL)
+//     - guardianName: string (optional, PII)
+//     - contact: string (optional, PII)
+//     - address: string (optional, PII)
+//     - recommendation: string (optional)
+//     - teacherName: string (optional)
+//     - attendance: list<map> (optional, student's own attendance entries)
+//     - examMarks: list<map> (optional, student's own exam mark entries)
+//     - uid: string (optional, linked Firebase Auth UID)
+//   Access: Read by admins and teachers; students may read ONLY their own
+//           document (matching uid or regNo == entityId); all client writes denied.
+//
+// Collection: attendance/{docId}
+//   Fields:
+//     - date: string (required, YYYY-MM-DD)
+//     - grade: string (required)
+//     - type: string (required, 'dhamma_school' | 'sil_day')
+//     - records: list<map> (required, per-student attendance status records)
+//   Access: Read by admins and teachers only; all client writes denied.
+//
+// Collection: deeds/{docId}
+//   Fields:
+//     - id: string (required)
+//     - regNo: string (required, owning student regNo)
+//     - studentName: string (required)
+//     - grade: string (optional)
+//     - deed: string (optional)
+//     - title: string (optional)
+//     - category: string (optional)
+//     - points: number (optional)
+//     - score: number (optional)
+//     - date: string (required)
+//     - remarks: string (optional)
+//   Access: Read by admins and teachers; students may read ONLY where
+//           regNo == request.auth.token.entityId; all client writes denied.
+//
+// Collection: badges/{docId}
+//   Fields:
+//     - id: string (required)
+//     - studentName: string (required)
+//     - regNo: string (required, owning student regNo)
+//     - grade: string (required)
+//     - badge: string (required)
+//     - points: number (optional)
+//     - date: string (required)
+//     - teacher: string (optional)
+//     - remarks: string (optional)
+//     - status: string (required, 'pending' | 'approved' | 'rejected')
+//   Access: Read by admins and teachers; students may read ONLY where
+//           regNo == request.auth.token.entityId; all client writes denied.
+//
+// Collection: observations/{docId}
+//   Fields:
+//     - id: string (required)
+//     - regNo: string (required, owning student regNo)
+//     - studentName: string (required)
+//     - category: string (required)
+//     - rating: string (optional)
+//     - date: string (required)
+//     - remarks: string (optional)
+//   Access: Read by admins and teachers; students may read ONLY where
+//           regNo == request.auth.token.entityId; all client writes denied.
+//
+// Collection: events/{docId}
+//   Fields:
+//     - id: string (required)
+//     - title: string (required)
+//     - category: string (optional)
+//     - date: string (required)
+//     - time: string (optional)
+//     - venue: string (optional)
+//     - grades: string (optional)
+//     - description: string (optional)
+//     - desc: string (optional)
+//     - day: string (optional)
+//     - month: string (optional)
+//   Access: Read by any authenticated app user (admin, teacher, student);
+//           all client writes denied.
+//
+// Collection: announcements/{docId}
+//   Fields:
+//     - id: string (required)
+//     - title: string (required)
+//     - audience: string (optional)
+//     - urgency: string (optional, 'normal' | 'important' | 'urgent')
+//     - body: string (required)
+//     - date: string (required)
+//     - author: string (optional)
+//   Access: Read by any authenticated app user (admin, teacher, student);
+//           all client writes denied.
+//
+// Collection: materials/{docId}
+//   Fields:
+//     - id: string (required)
+//     - title: string (required)
+//     - grade: string (required)
+//     - type: string (optional)
+//     - link: string (optional)
+//     - desc: string (optional)
+//     - date: string (required)
+//     - author: string (optional)
+//     - fileName: string (optional)
+//     - fileSize: number|string (optional)
+//     - fileData: string (optional)
+//   Access: Read by any authenticated app user (admin, teacher, student);
+//           all client writes denied.
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Fail-Closed Authentication & Authorization Helper Functions
+    // ===============================================================
+
+    // Verify request has an authenticated Firebase Auth user with a non-empty UID.
+    // Deliberately does NOT check email_verified because users sign in via custom
+    // tokens minted by B_END after RegNo/ID + PIN verification.
+    function isSignedIn() {
+      return request.auth != null &&
+             request.auth.uid is string &&
+             request.auth.uid.size() > 0;
+    }
+
+    // Safely verify the server-minted `role` custom claim matches `roleName`.
+    function hasRole(roleName) {
+      return isSignedIn() &&
+             'role' in request.auth.token &&
+             request.auth.token.role is string &&
+             request.auth.token.role == roleName;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isTeacher() {
+      return hasRole('teacher');
+    }
+
+    function isStudent() {
+      return hasRole('student');
+    }
+
+    function isStaff() {
+      return isAdmin() || isTeacher();
+    }
+
+    // Any authenticated user with a valid application role claim.
+    function isAppUser() {
+      return isStaff() || isStudent();
+    }
+
+    // Safely verify the server-minted `entityId` custom claim is a non-empty string.
+    function hasEntityId() {
+      return isSignedIn() &&
+             'entityId' in request.auth.token &&
+             request.auth.token.entityId is string &&
+             request.auth.token.entityId.size() > 0;
+    }
+
+    // Student single-document ownership check for `students/{docId}` `get` requests.
+    // Guards `uid` and `regNo` key existence so seeded docs missing `uid` do not
+    // cause CEL undefined-property evaluation errors before checking `regNo`.
+    function isOwnerStudent() {
+      return isStudent() && (
+        ('uid' in resource.data &&
+         resource.data.uid is string &&
+         resource.data.uid.size() > 0 &&
+         resource.data.uid == request.auth.uid) ||
+        (hasEntityId() &&
+         'regNo' in resource.data &&
+         resource.data.regNo is string &&
+         resource.data.regNo.size() > 0 &&
+         resource.data.regNo == request.auth.token.entityId)
+      );
+    }
+
+    // Student list-query ownership check for `students/{docId}` `list` requests.
+    // Kept free of `in` / `is string` / `.size()` on `resource.data` so Firestore's
+    // static query validator can prove both `where('uid', '==', ...)` and
+    // `where('regNo', '==', ...)` queries.
+    function isOwnerStudentQuery() {
+      return isStudent() && (
+        resource.data.uid == request.auth.uid ||
+        (hasEntityId() && resource.data.regNo == request.auth.token.entityId)
+      );
+    }
+
+    // Student ownership check for regNo-scoped collections (`deeds`, `badges`, `observations`).
+    function isOwnerStudentByRegNo() {
+      return isStudent() &&
+             hasEntityId() &&
+             resource.data.regNo == request.auth.token.entityId;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // 1. Admins: sensitive directory; readable only by signed-in admins.
+    // PIN hashes must never be stored in this collection.
+    match /admins/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // 2. Teachers: contains staff contact info (phone); readable only by admins and teachers.
+    match /teachers/{docId} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
+    // 3. Students: contains PII (dob, guardianName, contact, address, examMarks).
+    // Staff may read all; students may read only their own record.
+    match /students/{docId} {
+      allow get: if isStaff() || isOwnerStudent();
+      allow list: if isStaff() || isOwnerStudentQuery();
+      allow write: if false;
+    }
+
+    // 4. Attendance logs: class-wide records arrays; readable only by admins and teachers.
+    match /attendance/{docId} {
+      allow read: if isStaff();
+      allow write: if false;
+    }
+
+    // 5. Good Deeds: staff read all; students read only their own (by regNo).
+    match /deeds/{docId} {
+      allow read: if isStaff() || isOwnerStudentByRegNo();
+      allow write: if false;
+    }
+
+    // 6. Badges: staff read all; students read only their own (by regNo).
+    match /badges/{docId} {
+      allow read: if isStaff() || isOwnerStudentByRegNo();
+      allow write: if false;
+    }
+
+    // 7. Observations: staff read all; students read only their own (by regNo).
+    match /observations/{docId} {
+      allow read: if isStaff() || isOwnerStudentByRegNo();
+      allow write: if false;
+    }
+
+    // 8. Events: shared school calendar; readable by any authenticated app user.
+    match /events/{docId} {
+      allow read: if isAppUser();
+      allow write: if false;
+    }
+
+    // 9. Announcements: broadcast notices; readable by any authenticated app user.
+    match /announcements/{docId} {
+      allow read: if isAppUser();
+      allow write: if false;
+    }
+
+    // 10. Study Materials: curriculum resources; readable by any authenticated app user.
+    match /materials/{docId} {
+      allow read: if isAppUser();
+      allow write: if false;
+    }
+
+    // ===============================================================
+    // Default-Deny Catch-All (Blocks all unlisted collections & subcollections)
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

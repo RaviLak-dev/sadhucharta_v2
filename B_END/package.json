@@ -1,0 +1,26 @@
+{
+  "name": "daham-pasala-backend",
+  "version": "1.0.0",
+  "description": "REST API Backend for Daham Pasala Sadhu Charya System",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "seed:firebase": "node seed-firebase.js",
+    "seed:mongo": "node seed-mongo.js",
+    "test": "node test.js",
+    "test:direct": "node test-direct.js"
+  },
+  "keywords": [
+    "daham-pasala",
+    "buddhist-education",
+    "student-management"
+  ],
+  "author": "Daham Pasala Team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "firebase-admin": "^14.5.0",
+    "mongoose": "^9.9.5"
+  }
+}

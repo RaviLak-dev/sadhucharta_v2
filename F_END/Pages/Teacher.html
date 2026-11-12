@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>දහම් පාසල් ආචාර්ය ද්වාරය | දහම් පාසල් ශිෂ්‍ය සාධුවරයා</title>
+  <!-- Google Fonts: Noto Sans Sinhala & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/style.css">
+  <script src="../JS/api.js"></script>
+</head>
+<body class="portal-page">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-info">
+        <i class="fa-solid fa-dharmachakra"></i>
+        <div>
+          <h2>දහම් පාසල් ශිෂ්‍ය සාධුවරයා</h2>
+          <p>බෞද්ධ කටයුතු දෙපාර්තමේන්තුව</p>
+        </div>
+      </div>
+      <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation" title="මෙනුව විවෘත කරන්න">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a class="nav-link active" id="nav-dashboard" onclick="switchTeacherPage('dashboard')">
+          <i class="fa-solid fa-house"></i> දළ විශ්ලේෂණය (Overview)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-attendance" onclick="switchTeacherPage('attendance')">
+          <i class="fa-solid fa-calendar-check"></i> පැමිණීම සටහන් කිරීම (Mark Attendance)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-good-deeds" onclick="switchTeacherPage('good-deeds')">
+          <i class="fa-solid fa-heart"></i> යහපත් ක්‍රියාකාරකම් (Good Deeds)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-observations" onclick="switchTeacherPage('observations')">
+          <i class="fa-solid fa-clipboard-check"></i> චර්යා නිරීක්ෂණ (Behavior)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-study-materials" onclick="switchTeacherPage('study-materials')">
+          <i class="fa-solid fa-book-bookmark"></i> අධ්‍යයන නිබන්ධන (Materials)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-badges" onclick="switchTeacherPage('badges')">
+          <i class="fa-solid fa-medal"></i> පදක්කම් & ලකුණු (Badges & Points)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-recommendations" onclick="switchTeacherPage('recommendations')">
+          <i class="fa-solid fa-certificate"></i> ගුරු නිර්දේශ (Recommendations)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-exams" onclick="switchTeacherPage('exams')">
+          <i class="fa-solid fa-graduation-cap"></i> වාර විභාග ලකුණු (Term Exam Marks)
+        </a>
+      </li>
+      <li class="nav-item" style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px;">
+        <a class="nav-link" href="Admin.html">
+          <i class="fa-solid fa-landmark-dome"></i> පරිපාලන කාර්යාලය (Admin Portal)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="Student.html">
+          <i class="fa-solid fa-user-graduate"></i> ශිෂ්‍ය Dashboard (Student)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="OnboardingPage.html">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> භූමිකාව තෝරන්න (Select Role)
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="header-bar">
+      <div class="page-title">
+        <h1 id="current-page-title">ආචාර්ය ද්වාරය (Teacher Portal)</h1>
+        <p>ශ්‍රී ලංකා බෞද්ධ කටයුතු දෙපාර්තමේන්තුව - ඩිජිටල් ශිෂ්‍ය සාධුවරයා පද්ධතිය</p>
+      </div>
+
+      <!-- Header Controls: Teacher Session Chip & Logout -->
+      <div class="user-header-controls" id="header-teacher-area" style="display: none;">
+        <div class="user-session-chip">
+          <img id="headerTeacherAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Teacher">
+          <div class="user-session-info">
+            <span class="student-chip-name" id="headerTeacherName">ධර්මසේන අමරසිංහ මයා</span>
+            <span class="student-chip-grade" id="headerTeacherRole">පන්තිභාර ආචාර්ය (10 ශ්‍රේණිය)</span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="handleTeacherLogout()" title="ගිණුමෙන් ඉවත් වන්න">
+          <i class="fa-solid fa-right-from-bracket"></i> ඉවත්වන්න
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Teacher Login Screen -->
+    <div id="teacher-login-view" class="student-login-container">
+      <div class="student-login-card">
+        <div class="login-icon-badge">
+          <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+        <h2>ආචාර්ය පිවිසුම (Teacher Login)</h2>
+        <p class="login-subtitle">ශිෂ්‍ය ඇගයීම්, යහපත් ක්‍රියා, චර්යා නිරීක්ෂණ සහ ධර්ම අධ්‍යයන කළමනාකරණය සඳහා පිවිසෙන්න.</p>
+
+        <form class="login-form" onsubmit="handleTeacherLogin(event)">
+          <div class="login-error-msg" id="teacherLoginErrorMsg" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span id="teacherLoginErrorText">ඇතුළත් කළ අංකය හෝ මුරපදය වැරදියි!</span>
+          </div>
+
+          <div class="form-group">
+            <label for="teacherLoginId">ආචාර්ය ලියාපදිංචි අංකය (Teacher ID):</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-id-badge" aria-hidden="true"></i>
+              <input type="text" id="teacherLoginId" name="teacherId" placeholder="උදා: TCH/2026/01" autocomplete="username" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="teacherLoginPassword">මුරපදය / PIN (Password):</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+              <input type="password" id="teacherLoginPassword" name="pin" placeholder="මුරපදය ඇතුළත් කරන්න" autocomplete="current-password" enterkeyhint="done" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login-submit">
+            <span>පිවිසෙන්න (Login)</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </form>
+
+        <div class="demo-credentials-box">
+          <p>පරීක්ෂා කිරීම සඳහා ආචාර්ය ගිණුමක් තෝරන්න (Demo Accounts):</p>
+          <div class="demo-account-chips">
+            <button type="button" class="demo-chip" onclick="quickFillTeacherLogin('TCH/2026/01', '1234')">
+              <i class="fa-solid fa-user-tie" aria-hidden="true"></i> ධර්මසේන අමරසිංහ (10 ශ්‍රේණිය)
+            </button>
+            <button type="button" class="demo-chip" onclick="quickFillTeacherLogin('TCH/2026/02', '1234')">
+              <i class="fa-solid fa-user-tie" aria-hidden="true"></i> සුජාතා විජේසිංහ (9 ශ්‍රේණිය)
+            </button>
+          </div>
+          <div class="login-back-row">
+            <a href="OnboardingPage.html" class="back-to-onboarding-link">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> භූමිකාව තෝරන පිටුවට ආපසු යන්න (Back to Role Selection)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: Authenticated Teacher Portal -->
+    <div id="teacher-portal-view" style="display: none;">
+
+      <!-- TAB 1: Overview Dashboard -->
+      <div id="teacher-dashboard" class="page-section active">
+        <div class="card welcome-card">
+          <div class="welcome-inner">
+            <div>
+              <h2 id="teacherGreeting">සාදරයෙන් පිළිගනිමු, ධර්මසේන අමරසිංහ මයා!</h2>
+              <p id="teacherAssignedClass">10 ශ්‍රේණිය පන්තිභාර ගුරු මණ්ඩලය - ශ්‍රී සුගත ධර්ම විද්‍යාලය</p>
+            </div>
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="metric-card">
+            <span>ලියාපදිංචි ශිෂ්‍ය සංඛ්‍යාව</span>
+            <strong id="statTotalStudents">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>සටහන් කළ යහපත් ක්‍රියා</span>
+            <strong id="statTotalDeeds" style="color: #15803d;">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>චර්යා නිරීක්ෂණ සටහන්</span>
+            <strong id="statTotalObservations" style="color: var(--secondary-blue);">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>පිරිනැමූ පදක්කම්</span>
+            <strong id="statTotalBadges" style="color: #d97706;">0</strong>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-users"></i> පන්ති ශිෂ්‍ය නාමාවලිය සහ ප්‍රගති කළමනාකරණය (Student Roster)</h3>
+          </div>
+
+          <!-- Roster Filter Controls -->
+          <div class="roster-filter-block">
+            <div class="roster-col-grade">
+              <label class="sub-label"><i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade Filter):</label>
+              <select id="rosterGradeFilter" class="student-filter-select" onchange="renderTeacherDashboard()">
+                <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+              </select>
+            </div>
+            <div class="roster-col-search">
+              <label class="sub-label"><i class="fa-solid fa-magnifying-glass"></i> ශිෂ්‍යයා සොයන්න (Search Student):</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="rosterSearchQuery" placeholder="නම හෝ ඇතුළත්වීමේ අංකය ලියන්න..." oninput="renderTeacherDashboard()">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ඇතුළත් අංකය</th>
+                  <th>ශිෂ්‍යයාගේ නම</th>
+                  <th>ශ්‍රේණිය</th>
+                  <th>පැමිණීම</th>
+                  <th>ලබාදුන් ලකුණු</th>
+                  <th>ක්‍රියාමාර්ග (Actions)</th>
+                </tr>
+              </thead>
+              <tbody id="teacherRosterTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Administrative Notices for Faculty -->
+        <div class="card" style="margin-top: 25px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-yellow);"></i> පරිපාලන සහ ආචාර්ය නිවේදන පුවරුව (Administrative Notices)</h3>
+            <span class="status-pill present" id="teacherAnnouncementCount">0 නිවේදන</span>
+          </div>
+          <div id="teacherAnnouncementsFeed" class="announcements-feed" style="margin-top: 15px;">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Student Attendance Roll Call -->
+      <div id="teacher-attendance" class="page-section">
+        <!-- Assigned Class Announcement Banner -->
+        <div class="assigned-class-banner">
+          <div class="assigned-class-left">
+            <div class="assigned-class-icon">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="assigned-class-details">
+              <h3>
+                ඔබට පැවරුණු පන්තිය: 
+                <span class="assigned-class-badge" id="attBannerClass">10 ශ්‍රේණිය</span>
+              </h3>
+              <p>
+                <i class="fa-solid fa-user-tie"></i> පන්තිභාර ආචාර්ය: <strong id="attBannerTeacherName">ධර්මසේන අමරසිංහ මයා</strong> 
+                | <i class="fa-solid fa-school"></i> ශ්‍රී සුගත ධර්ම විද්‍යාලය
+              </p>
+            </div>
+          </div>
+          <div class="assigned-class-right">
+            <label style="font-size: 0.84rem; color: #e2e8f0; font-weight: 600;">පන්තිය තෝරන්න:</label>
+            <select id="attFilterGrade" class="attendance-ctrl-input" style="padding: 6px 12px; font-size: 0.84rem;" onchange="renderAttendanceRoster()">
+              <option value="10 ශ්‍රේණිය">10 ශ්‍රේණිය (Grade 10)</option>
+              <option value="all">සියලුම ශ්‍රේණි (All)</option>
+              <option value="1 ශ්‍රේණිය">1 ශ්‍රේණිය (Grade 1)</option>
+              <option value="2 ශ්‍රේණිය">2 ශ්‍රේණිය (Grade 2)</option>
+              <option value="3 ශ්‍රේණිය">3 ශ්‍රේණිය (Grade 3)</option>
+              <option value="4 ශ්‍රේණිය">4 ශ්‍රේණිය (Grade 4)</option>
+              <option value="5 ශ්‍රේණිය">5 ශ්‍රේණිය (Grade 5)</option>
+              <option value="6 ශ්‍රේණිය">6 ශ්‍රේණිය (Grade 6)</option>
+              <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
+              <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
+              <option value="9 ශ්‍රේණිය">9 ශ්‍රේණිය (Grade 9)</option>
+              <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
+              <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
+              <option value="6 ශ්‍රේණිය">6 ශ්‍රේණිය (Grade 6)</option>
+              <option value="all">සියලුම ශ්‍රේණි (All)</option>
+              <option value="10 ශ්‍රේණිය" selected>10 ශ්‍රේණිය (Grade 10)</option>
+              <option value="අවසාන ශ්‍රේණිය">අවසාන ශ්‍රේණිය (Final)</option>
+              <option value="ධර්මාචාර්ය">ධර්මාචාර්ය (Teaching Exam)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h3><i class="fa-solid fa-calendar-check" style="color: var(--primary-blue);"></i> [D] ශිෂ්‍ය පැමිණීමේ ලේඛනය (Student Attendance Roll Call)</h3>
+            <div class="attendance-summary-chips" id="attSummaryChips">
+              <span class="att-chip total"><i class="fa-solid fa-users"></i> සිසුන්: <strong id="attCountTotal">0</strong></span>
+              <span class="att-chip present"><i class="fa-solid fa-circle-check"></i> පැමිණි: <strong id="attCountPresent">0</strong></span>
+              <span class="att-chip absent"><i class="fa-solid fa-circle-xmark"></i> නොපැමිණි: <strong id="attCountAbsent">0</strong></span>
+              <span class="att-chip excused"><i class="fa-solid fa-clock"></i> අවසර: <strong id="attCountExcused">0</strong></span>
+              <span class="att-chip flowers" style="background: #fdf2f8; color: #be185d; border: 1px solid #f472b6;"><i class="fa-solid fa-seedling" style="color: #db2777;"></i> 🌸 මල් රැගෙන ආ: <strong id="attCountFlowers">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Attendance Control Bar -->
+          <div class="attendance-ctrl-bar">
+            <div class="attendance-ctrl-group">
+              <label><i class="fa-solid fa-calendar-day"></i> දිනය (Session Date):</label>
+              <input type="date" id="attSessionDate" class="attendance-ctrl-input" onchange="handleAttDateOrCategoryChange()">
+            </div>
+            <div class="attendance-ctrl-group">
+              <label><i class="fa-solid fa-layer-group"></i> වැඩසටහන් වර්ගය (Session Type):</label>
+              <select id="attSessionCategory" class="attendance-ctrl-input" onchange="handleAttDateOrCategoryChange()">
+                <option value="sunday">දහම් පාසල් ඉරිදා පැමිණීම (Sunday Dhamma School)</option>
+                <option value="poya">පෝහෝ දින අටසිල් සමාදානය (Poya Sil Program)</option>
+                <option value="event">විශේෂ වැඩසටහන් / ශ්‍රමදාන (Special Event)</option>
+              </select>
+            </div>
+            <div class="attendance-ctrl-group">
+              <button type="button" class="btn-mark-shortcut" onclick="markAllAttendance('Present')">
+                <i class="fa-solid fa-check-double" style="color:#16a34a;"></i> සියල්ලන්ටම පැමිණීම
+              </button>
+              <button type="button" class="btn-mark-shortcut" onclick="markAllAttendance('Absent')">
+                <i class="fa-solid fa-xmark" style="color:#dc2626;"></i> සියල්ල නොපැමිණි
+              </button>
+              <button type="button" class="btn-mark-shortcut" onclick="markAllFlowers(true)" style="background:#fdf2f8; border: 1px solid #f472b6; color:#9d174d;">
+                <i class="fa-solid fa-seedling" style="color:#db2777;"></i> 🌸 සියල්ලෝම මල් ගෙන ආවා
+              </button>
+              <button type="button" class="btn-mark-shortcut" onclick="markAllFlowers(false)" style="background:#f8fafc; border: 1px solid #cbd5e1; color:#64748b;">
+                <i class="fa-solid fa-rotate-left"></i> මල් ඉවත් කරන්න
+              </button>
+            </div>
+          </div>
+
+          <!-- Roll Call Sheet Table -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 120px;">ඇතුළත් අංකය</th>
+                  <th>ශිෂ්‍යයාගේ නම</th>
+                  <th style="width: 90px; text-align: center;">පෙර පැමිණීම</th>
+                  <th style="width: 210px; text-align: center;">පැමිණීමේ තත්ත්වය</th>
+                  <th style="width: 140px; text-align: center;">🌸 මල් රැගෙන ඒම</th>
+                  <th>විශේෂ සටහන් (Remarks)</th>
+                </tr>
+              </thead>
+              <tbody id="attRollCallTableBody">
+                <!-- Injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            <span class="save-status" id="status-att">✓ අද දින පැමිණීම සාර්ථකව පද්ධතියට සුරැකිණි!</span>
+            <button type="button" class="btn-save" onclick="handleSaveAttendance()" style="padding: 12px 24px; font-size: 0.95rem;">
+              <i class="fa-solid fa-floppy-disk"></i> පැමිණීමේ ලේඛනය සුරකින්න (Save Attendance Sheet)
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent Class Attendance History Card -->
+        <div class="card" style="margin-top: 25px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> පන්තියේ මෑත කාලීන පැමිණීම් වාර්තා සාරාංශය (Recent Class Attendance Sessions)</h3>
+            <span class="material-tag" id="attHistoryClassTag">10 ශ්‍රේණිය</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>දිනය</th>
+                  <th>වැඩසටහන</th>
+                  <th>පන්තිය</th>
+                  <th>පැමිණි සිසුන්</th>
+                  <th>නොපැමිණි සිසුන්</th>
+                  <th>පැමිණීමේ %</th>
+                  <th>සටහන් කළ ආචාර්යතුමා</th>
+                </tr>
+              </thead>
+              <tbody id="attHistoryTableBody">
+                <!-- Injected dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Record Good Deeds -->
+      <div id="teacher-good-deeds" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-heart"></i> [C] ශිෂ්‍ය යහපත් ක්‍රියාකාරකම් සටහන් කිරීම (Record Good Deeds)</h3>
+          </div>
+          <p class="card-note">ශිෂ්‍යයා දහම් පාසලේදී, පන්සලේදී හෝ සමාජයේදී සිදුකළ යහපත් සමාජ සත්කාරක හා ආගමික ක්‍රියා ඇගයීම.</p>
+
+          <form onsubmit="handleSaveGoodDeed(event)" class="form-grid" style="margin-bottom: 25px;">
+            <!-- Grade & Searchable Student Picker -->
+            <div class="student-selector-block">
+              <div class="student-selector-header">
+                <label><i class="fa-solid fa-user-graduate"></i> අදාළ ශිෂ්‍යයා තෝරාගැනීම (Select Student):</label>
+                <span class="match-count-badge" id="deedMatchBadge">ශිෂ්‍යයන් හමුවිය</span>
+              </div>
+              <div class="student-filter-row">
+                <div class="filter-col-grade">
+                  <label class="sub-label"><span class="step-badge">1</span> <i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade):</label>
+                  <select id="deedGradeFilter" class="student-filter-select" onchange="updateStudentPicker('deed')">
+                    <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                    <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                    <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                    <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                    <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                    <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                    <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                    <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                    <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+                  </select>
+                </div>
+                <div class="filter-col-search">
+                  <label class="sub-label"><span class="step-badge">2</span> <i class="fa-solid fa-magnifying-glass"></i> නම / අංකය (Search):</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="deedSearchQuery" class="student-search-input" placeholder="නම හෝ DPS අංකය..." oninput="updateStudentPicker('deed')">
+                  </div>
+                </div>
+                <div class="filter-col-student">
+                  <label class="sub-label"><span class="step-badge step-badge-target">3</span> <i class="fa-solid fa-user-check"></i> තෝරාගත් ශිෂ්‍යයා (Selected Student):</label>
+                  <select id="deedStudentSelect" class="student-final-select" required></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>ක්‍රියාකාරකමේ නම (Title / Good Deed):</label>
+              <input type="text" id="deedTitle" placeholder="උදා: පන්සල පිරිසිදු කිරීම සහ වැඩිහිටියන්ට උපකාර කිරීම" required>
+            </div>
+            <div class="form-group">
+              <label>අංශය / වර්ගීකරණය (Category):</label>
+              <select id="deedCategory">
+                <option value="ආගමික වතාවත්">ආගමික වතාවත් සහ පූජා කටයුතු</option>
+                <option value="සමාජ සත්කාරක">සමාජ සත්කාරක සහ ගිලානෝපස්ථාන</option>
+                <option value="පරිසර සංරක්ෂණ">රුක් රෝපණ සහ පරිසර පිරිසිදුකම</option>
+                <option value="දහම් පාසල් සහයෝගය">දහම් පාසල් වැඩසටහන් සංවිධාන සහාය</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>සිදුකළ දිනය (Date):</label>
+              <input type="date" id="deedDate" required>
+            </div>
+            <div class="form-group">
+              <label>ඇගයීම් ලකුණු (Merit Points / Score 1-10):</label>
+              <input type="number" id="deedScore" min="1" max="10" value="10" required>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>ගුරු ඇගයීම් සටහන (Teacher's Evaluation Note):</label>
+              <input type="text" id="deedRemarks" placeholder="ක්‍රියාකාරකම පිළිබඳව ආචාර්යතුමාගේ ප්‍රශංසනීය අදහස">
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-good-deed">✓ යහපත් ක්‍රියාව සාර්ථකව සටහන් විය!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-floppy-disk"></i> යහපත් ක්‍රියාව සටහන් කරන්න
+              </button>
+            </div>
+          </form>
+
+          <div class="card-header" style="margin-top: 30px;">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> මෑතකදී අනුමත කළ යහපත් ක්‍රියා ලැයිස්තුව</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ශිෂ්‍යයා</th>
+                  <th>ක්‍රියාකාරකම</th>
+                  <th>අංශය</th>
+                  <th>දිනය</th>
+                  <th>ලකුණු</th>
+                  <th>ගුරු සටහන</th>
+                </tr>
+              </thead>
+              <tbody id="goodDeedsHistoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Behavior Observations -->
+      <div id="teacher-observations" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-clipboard-check"></i> [E] ශිෂ්‍ය චර්යා නිරීක්ෂණ සහ විනය ඇගයීම (Behavior Observations)</h3>
+          </div>
+          <p class="card-note">පන්ති කාමරයේ හැසිරීම, ගුරු දෙගුරු ගෞරවය, සිහිය හා ඉවසීම පිළිබඳව ආචාර්ය නිරීක්ෂණ සටහන් කිරීම.</p>
+
+          <form onsubmit="handleSaveObservation(event)" class="form-grid" style="margin-bottom: 25px;">
+            <!-- Grade & Searchable Student Picker -->
+            <div class="student-selector-block">
+              <div class="student-selector-header">
+                <label><i class="fa-solid fa-user-graduate"></i> අදාළ ශිෂ්‍යයා තෝරාගැනීම (Select Student):</label>
+                <span class="match-count-badge" id="obsMatchBadge">ශිෂ්‍යයන් හමුවිය</span>
+              </div>
+              <div class="student-filter-row">
+                <div class="filter-col-grade">
+                  <label class="sub-label"><span class="step-badge">1</span> <i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade):</label>
+                  <select id="obsGradeFilter" class="student-filter-select" onchange="updateStudentPicker('obs')">
+                    <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                    <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                    <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                    <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                    <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                    <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                    <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                    <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                    <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+                  </select>
+                </div>
+                <div class="filter-col-search">
+                  <label class="sub-label"><span class="step-badge">2</span> <i class="fa-solid fa-magnifying-glass"></i> නම / අංකය (Search):</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="obsSearchQuery" class="student-search-input" placeholder="නම හෝ DPS අංකය..." oninput="updateStudentPicker('obs')">
+                  </div>
+                </div>
+                <div class="filter-col-student">
+                  <label class="sub-label"><span class="step-badge step-badge-target">3</span> <i class="fa-solid fa-user-check"></i> තෝරාගත් ශිෂ්‍යයා (Selected Student):</label>
+                  <select id="obsStudentSelect" class="student-final-select" required></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>නිරීක්ෂණ අංශය (Observation Category):</label>
+              <select id="obsCategory">
+                <option value="විනය හා ශික්ෂණය">විනය හා ශික්ෂණය (Discipline & Decorum)</option>
+                <option value="ගුරු දෙගුරු ගෞරවය">ගුරු දෙගුරු ගෞරවය (Respect to Elders & Teachers)</option>
+                <option value="සිහිය හා සන්සුන් බව">සිහිය හා සන්සුන් බව (Mindfulness & Demeanor)</option>
+                <option value="සාමූහිකත්වය සහ මිත්‍රශීලී බව">සාමූහිකත්වය සහ මිත්‍රශීලී බව (Teamwork & Fellowship)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ඇගයීම් මට්ටම (Rating Level):</label>
+              <select id="obsRating">
+                <option value="විශිෂ්ටයි (Distinction)">විශිෂ්ටයි (Distinction - A)</option>
+                <option value="ඉතා හොඳයි (Very Good)">ඉතා හොඳයි (Very Good - B)</option>
+                <option value="සාමාන්‍යයි (Satisfactory)">සාමාන්‍යයි (Satisfactory - C)</option>
+                <option value="වැඩිදියුණු විය යුතුයි (Needs Improvement)">වැඩිදියුණු විය යුතුයි (Needs Improvement)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>දිනය (Observation Date):</label>
+              <input type="date" id="obsDate" required>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>නිරීක්ෂණ සටහන (Detailed Observational Remarks):</label>
+              <textarea id="obsRemarks" rows="3" placeholder="ශිෂ්‍යයාගේ හැසිරීම හා චර්යා රටාව පිළිබඳ විස්තරාත්මක සටහන..." required></textarea>
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-obs">✓ චර්යා නිරීක්ෂණය සාර්ථකව සටහන් විය!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-floppy-disk"></i> නිරීක්ෂණය සටහන් කරන්න
+              </button>
+            </div>
+          </form>
+
+          <div class="card-header" style="margin-top: 30px;">
+            <h3><i class="fa-solid fa-list-check"></i> ශිෂ්‍ය චර්යා නිරීක්ෂණ ලේඛනය</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ශිෂ්‍යයා</th>
+                  <th>අංශය</th>
+                  <th>දිනය</th>
+                  <th>ඇගයීම් මට්ටම</th>
+                  <th>නිරීක්ෂණ සටහන</th>
+                </tr>
+              </thead>
+              <tbody id="observationsHistoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Upload Study Materials -->
+      <div id="teacher-study-materials" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-cloud-arrow-up"></i> ධර්ම අධ්‍යයන නිබන්ධන සහ සටහන් එක් කිරීම (Study Materials)</h3>
+          </div>
+          <p class="card-note">දහම් පාසල් ශිෂ්‍යයන්ගේ පරිශීලනය සඳහා ගාථා, ධර්ම සටහන්, ආදර්ශ ප්‍රශ්න පත්‍ර සහ නිබන්ධන එක් කරන්න.</p>
+
+          <form onsubmit="handleUploadStudyMaterial(event)" class="form-grid" style="margin-bottom: 25px;">
+            <div class="form-group">
+              <label>නිබන්ධනයේ මාතෘකාව (Title):</label>
+              <input type="text" id="matTitle" placeholder="උදා: 10 ශ්‍රේණිය - පාලි ගාථා සහ තේරුම" required>
+            </div>
+            <div class="form-group">
+              <label>අදාළ ශ්‍රේණිය (Target Grade):</label>
+              <select id="matGrade">
+                <option value="10 ශ්‍රේණිය">10 ශ්‍රේණිය</option>
+                <option value="9 ශ්‍රේණිය">9 ශ්‍රේණිය</option>
+                <option value="සියලුම ශ්‍රේණි සඳහා">සියලුම ශ්‍රේණි සඳහා</option>
+                <option value="සියලුම ශ්‍රේණි සඳහා">සියලුම ශ්‍රේණි සඳහා (All Grades)</option>
+                <option value="1 ශ්‍රේණිය">1 ශ්‍රේණිය (Grade 1)</option>
+                <option value="2 ශ්‍රේණිය">2 ශ්‍රේණිය (Grade 2)</option>
+                <option value="3 ශ්‍රේණිය">3 ශ්‍රේණිය (Grade 3)</option>
+                <option value="4 ශ්‍රේණිය">4 ශ්‍රේණිය (Grade 4)</option>
+                <option value="5 ශ්‍රේණිය">5 ශ්‍රේණිය (Grade 5)</option>
+                <option value="6 ශ්‍රේණිය">6 ශ්‍රේණිය (Grade 6)</option>
+                <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
+                <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
+                <option value="9 ශ්‍රේණිය">9 ශ්‍රේණිය (Grade 9)</option>
+                <option value="10 ශ්‍රේණිය" selected>10 ශ්‍රේණිය (Grade 10)</option>
+                <option value="අවසාන ශ්‍රේණිය">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                <option value="ධර්මාචාර්ය">ධර්මාචාර්ය (Teaching Exam)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ද්‍රව්‍ය වර්ගය (Resource Type):</label>
+              <select id="matType">
+                <option value="PDF නිබන්ධනය">PDF නිබන්ධනය (PDF Document)</option>
+                <option value="ධර්ම සටහන්">ධර්ම සටහන් (Lecture Note)</option>
+                <option value="ප්‍රශ්නෝත්තර">ආදර්ශ ප්‍රශ්නෝත්තර (Model Paper)</option>
+                <option value="ශ්‍රව්‍ය/වීඩියෝ පාඩම">ශ්‍රව්‍ය/වීඩියෝ පාඩම (Media Lesson)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ගොනු සබැඳිය හෝ ලිපිගොනුව (File or Resource Link):</label>
+              <input type="text" id="matLink" placeholder="https://... හෝ PDF නම" value="daham_study_guide.pdf">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>කෙටි හැඳින්වීම (Brief Description):</label>
+              <input type="text" id="matDesc" placeholder="ශිෂ්‍යයන්ට මෙම නිබන්ධනයෙන් ආවරණය වන පාඩම් කොටස් පිළිබඳ කෙටි සටහනක්..." required>
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-mat">✓ අධ්‍යයන නිබන්ධනය සාර්ථකව එක් විය!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-cloud-arrow-up"></i> නිබන්ධනය එක් කරන්න
+              </button>
+            </div>
+          </form>
+
+          <div class="card-header" style="margin-top: 30px;">
+            <h3><i class="fa-solid fa-folder-open"></i> දැනට එක්කර ඇති අධ්‍යයන නිබන්ධන (Material Repository)</h3>
+          </div>
+          <div class="study-materials-grid" id="studyMaterialsContainer"></div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Award Badges and Points -->
+      <div id="teacher-badges" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-medal"></i> සාධුවරයා පදක්කම් සහ කුසලතා ලකුණු ප්‍රදානය (Award Badges & Points)</h3>
+          </div>
+          <p class="card-note">විශිෂ්ට ආදර්ශමත් හැසිරීම්, පෝය අටසිල් සහ ධර්ම ඥානය අගයමින් ශිෂ්‍යයන්ට ඩිජිටල් පදක්කම් පිරිනමන්න.</p>
+
+          <form onsubmit="handleAwardBadge(event)" class="form-grid" style="margin-bottom: 25px;">
+            <!-- Grade & Searchable Student Picker -->
+            <div class="student-selector-block">
+              <div class="student-selector-header">
+                <label><i class="fa-solid fa-user-graduate"></i> පදක්කම ලබන ශිෂ්‍යයා තෝරාගැනීම (Select Student):</label>
+                <span class="match-count-badge" id="badgeMatchBadge">ශිෂ්‍යයන් හමුවිය</span>
+              </div>
+              <div class="student-filter-row">
+                <div class="filter-col-grade">
+                  <label class="sub-label"><span class="step-badge">1</span> <i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade):</label>
+                  <select id="badgeGradeFilter" class="student-filter-select" onchange="updateStudentPicker('badge')">
+                    <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                    <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                    <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                    <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                    <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                    <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                    <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                    <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                    <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+                  </select>
+                </div>
+                <div class="filter-col-search">
+                  <label class="sub-label"><span class="step-badge">2</span> <i class="fa-solid fa-magnifying-glass"></i> නම / අංකය (Search):</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="badgeSearchQuery" class="student-search-input" placeholder="නම හෝ DPS අංකය..." oninput="updateStudentPicker('badge')">
+                  </div>
+                </div>
+                <div class="filter-col-student">
+                  <label class="sub-label"><span class="step-badge step-badge-target">3</span> <i class="fa-solid fa-user-check"></i> තෝරාගත් ශිෂ්‍යයා (Selected Student):</label>
+                  <select id="badgeStudentSelect" class="student-final-select" required></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>ලබාදෙන කුසලතා ලකුණු ප්‍රමාණය (Merit Points):</label>
+              <input type="number" id="badgePoints" min="10" max="100" step="5" value="50" required>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>ප්‍රදානය කරනු ලබන පදක්කම තෝරන්න (Select Badge):</label>
+              <div class="badge-gallery-grid" id="badgeSelectorGrid"></div>
+              <input type="hidden" id="selectedBadgeName" value="සිල්වත් ශිෂ්‍යයා (Virtuous Student)">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>ප්‍රශංසා සටහන (Commendation Note):</label>
+              <input type="text" id="badgeRemarks" placeholder="මෙම ගෞරව සම්මානය පිරිනැමීමට හේතු වූ ආදර්ශවත් කරුණ..." required>
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-badge">✓ පදක්කම හා ලකුණු සාර්ථකව පිරිනමන ලදී!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-award"></i> පදක්කම හා ලකුණු පිරිනමන්න
+              </button>
+            </div>
+          </form>
+
+          <div class="card-header" style="margin-top: 30px;">
+            <h3><i class="fa-solid fa-trophy"></i> පිරිනමන ලද ගෞරව පදක්කම් ලැයිස්තුව</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ශිෂ්‍යයා</th>
+                  <th>පදක්කම</th>
+                  <th>ලකුණු</th>
+                  <th>දිනය</th>
+                  <th>අනුමැතිය (Status)</th>
+                  <th>ගුරු ප්‍රශංසාව</th>
+                </tr>
+              </thead>
+              <tbody id="awardedBadgesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Write Recommendations -->
+      <div id="teacher-recommendations" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-certificate"></i> නිල ගුරු නිර්දේශ සහ වාර්ෂික ඇගයීම් සටහන් (Write Recommendations)</h3>
+          </div>
+          <p class="card-note">ශිෂ්‍යයාගේ වාර්ෂික අවසන් ප්‍රගති වාර්තා පත්‍රය (Final Report Card) සඳහා ඇතුළත් වන නිල ගුරු නිර්දේශය සහ චර්යා සහතිකය.</p>
+
+          <form onsubmit="handleSaveRecommendation(event)" class="form-grid" style="margin-bottom: 25px;">
+            <!-- Grade & Searchable Student Picker -->
+            <div class="student-selector-block">
+              <div class="student-selector-header">
+                <label><i class="fa-solid fa-user-graduate"></i> අදාළ ශිෂ්‍යයා තෝරාගැනීම (Select Student):</label>
+                <span class="match-count-badge" id="recMatchBadge">ශිෂ්‍යයන් හමුවිය</span>
+              </div>
+              <div class="student-filter-row">
+                <div class="filter-col-grade">
+                  <label class="sub-label"><span class="step-badge">1</span> <i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade):</label>
+                  <select id="recGradeFilter" class="student-filter-select" onchange="updateStudentPicker('rec'); loadStudentCurrentRecommendation();">
+                    <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                    <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                    <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                    <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                    <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                    <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                    <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                    <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                    <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+                  </select>
+                </div>
+                <div class="filter-col-search">
+                  <label class="sub-label"><span class="step-badge">2</span> <i class="fa-solid fa-magnifying-glass"></i> නම / අංකය (Search):</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="recSearchQuery" class="student-search-input" placeholder="නම හෝ DPS අංකය..." oninput="updateStudentPicker('rec'); loadStudentCurrentRecommendation();">
+                  </div>
+                </div>
+                <div class="filter-col-student">
+                  <label class="sub-label"><span class="step-badge step-badge-target">3</span> <i class="fa-solid fa-user-check"></i> තෝරාගත් ශිෂ්‍යයා (Selected Student):</label>
+                  <select id="recStudentSelect" class="student-final-select" onchange="loadStudentCurrentRecommendation()" required></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>අධ්‍යයන කාල පරිච්ඡේදය (Academic Period):</label>
+              <select id="recTerm">
+                <option value="2026 වාර්ෂික අවසන් ඇගයීම">2026 වාර්ෂික අවසන් ඇගයීම (Annual Final Evaluation)</option>
+                <option value="2026 පළමු වාරය">2026 පළමු වාරය (Term 1 Evaluation)</option>
+                <option value="2026 දෙවන වාරය">2026 දෙවන වාරය (Term 2 Evaluation)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>සමස්ත චර්යා ශ්‍රේණිගත කිරීම (Conduct Evaluation):</label>
+              <select id="recConductGrade">
+                <option value="විශිෂ්ට සාමාර්ථය (Distinction - A)">විශිෂ්ට සාමාර්ථය (Distinction - Grade A)</option>
+                <option value="ඉතා හොඳයි (Credit - B)">ඉතා හොඳයි (Credit - Grade B)</option>
+                <option value="හොඳයි (Pass - C)">හොඳයි (Pass - Grade C)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>අත්සන් කළ ආචාර්යතුමාගේ නම:</label>
+              <input type="text" id="recTeacherSigner" value="ධර්මසේන අමරසිංහ මයා">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>නිල ගුරු නිර්දේශය (Official Teacher Recommendation):</label>
+              <textarea id="recText" rows="4" placeholder="ශිෂ්‍යයාගේ අධ්‍යාපනය, පෝය අටසිල් සහ සමාජ ආදර්ශවත් හැසිරීම ඇගයීමේ නිල නිර්දේශය..." required></textarea>
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-rec">✓ ගුරු නිර්දේශය වාර්තා පත්‍රයට යාවත්කාලීන විය!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-signature"></i> නිර්දේශය අනුමත කර සටහන් කරන්න
+              </button>
+            </div>
+          </form>
+
+          <div class="report-box" style="margin-top: 25px; border-left: 4px solid var(--accent-yellow);">
+            <h4><i class="fa-solid fa-circle-info"></i> වාර්තා පත්‍රයට බලපෑම (Live Sync Preview)</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+              ඔබ මෙහි සටහන් කරන නිල නිර්දේශය ශිෂ්‍යයාගේ <strong>Student Dashboard</strong> හි <strong>අවසන් වාර්තාව (Final Report Card)</strong> තුළ ඇති <em>"ශිෂ්‍ය චර්යා සහතිකය සහ සාමාන්‍ය නිර්දේශය"</em> කොටසට ක්ෂණිකව සබැඳේ.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Term Examination Marks Management -->
+      <div id="teacher-exams" class="page-section">
+        <div class="card">
+          <div class="card-header" style="justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-graduation-cap"></i> වාර විභාග ලකුණු ඇතුළත් කිරීම (Term Exam Marks Entry)</h3>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-save" style="background: #0284c7;" onclick="exportExamMarksCsv()">
+                <i class="fa-solid fa-file-excel"></i> ලකුණු අපනයනය (Export Marks)
+              </button>
+              <button type="button" class="btn-save" style="background: #10b981;" onclick="openBulkImportExamsModal()">
+                <i class="fa-solid fa-file-import"></i> ලකුණු තොග ඇතුළත් කිරීම (Bulk Import)
+              </button>
+            </div>
+          </div>
+          <p class="card-note">දහම් පාසල් අධ්‍යයන වර්ෂයේ වාර විභාග 03 (1 වන, 2 වන සහ 3 වන වාර) සඳහා ශිෂ්‍යයන්ගේ විෂයානුබද්ධ ලකුණු ඇතුළත් කරන්න. මෙම ලකුණු ශිෂ්‍යයාගේ වාර්ෂික අවසන් ප්‍රගති වාර්තාවට (Final Report Card) සෘජුව එක්වේ.</p>
+
+          <form onsubmit="handleSaveExamMark(event)" class="form-grid" style="margin-bottom: 25px;">
+            <!-- Grade & Searchable Student Picker -->
+            <div class="student-selector-block">
+              <div class="student-selector-header">
+                <label><i class="fa-solid fa-user-graduate"></i> ලකුණු සටහන් කරන ශිෂ්‍යයා තෝරාගැනීම (Select Student):</label>
+                <span class="match-count-badge" id="examMatchBadge">ශිෂ්‍යයන් හමුවිය</span>
+              </div>
+              <div class="student-filter-row">
+                <div class="filter-col-grade">
+                  <label class="sub-label"><span class="step-badge">1</span> <i class="fa-solid fa-graduation-cap"></i> ශ්‍රේණිය (Grade):</label>
+                  <select id="examGradeFilter" class="student-filter-select" onchange="updateStudentPicker('exam')">
+                    <option value="all">සියලුම ශ්‍රේණි (All Grades)</option>
+                    <option value="1">1 ශ්‍රේණිය (Grade 1)</option>
+                    <option value="2">2 ශ්‍රේණිය (Grade 2)</option>
+                    <option value="3">3 ශ්‍රේණිය (Grade 3)</option>
+                    <option value="4">4 ශ්‍රේණිය (Grade 4)</option>
+                    <option value="5">5 ශ්‍රේණිය (Grade 5)</option>
+                    <option value="6">6 ශ්‍රේණිය (Grade 6)</option>
+                    <option value="7">7 ශ්‍රේණිය (Grade 7)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="10">10 ශ්‍රේණිය (Grade 10)</option>
+                    <option value="9">9 ශ්‍රේණිය (Grade 9)</option>
+                    <option value="8">8 ශ්‍රේණිය (Grade 8)</option>
+                    <option value="final">අවසාන ශ්‍රේණිය (Daham School Final)</option>
+                    <option value="teaching">ධර්මාචාර්ය (Teaching Exam)</option>
+                  </select>
+                </div>
+                <div class="filter-col-search">
+                  <label class="sub-label"><span class="step-badge">2</span> <i class="fa-solid fa-magnifying-glass"></i> නම / අංකය (Search):</label>
+                  <div class="input-with-icon">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="examSearchQuery" class="student-search-input" placeholder="නම හෝ DPS අංකය..." oninput="updateStudentPicker('exam')">
+                  </div>
+                </div>
+                <div class="filter-col-student">
+                  <label class="sub-label"><span class="step-badge step-badge-target">3</span> <i class="fa-solid fa-user-check"></i> තෝරාගත් ශිෂ්‍යයා (Selected Student):</label>
+                  <select id="examStudentSelect" class="student-final-select" required onchange="loadStudentExamMarksForCurrentTerm()"></select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exam Term Selector -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-calendar-week"></i> විභාග වාරය (Examination Term):</label>
+              <select id="examTermSelect" class="student-filter-select" onchange="loadStudentExamMarksForCurrentTerm()">
+                <option value="1">1 වන වාර විභාගය (Term 1 Examination)</option>
+                <option value="2">2 වන වාර විභාගය (Term 2 Examination)</option>
+                <option value="3">3 වන වාරය / අවසාන විභාගය (Term 3 / Year-End Final)</option>
+              </select>
+            </div>
+
+            <!-- Academic Year -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-calendar-days"></i> අධ්‍යයන වර්ෂය (Academic Year):</label>
+              <input type="text" id="examYearInput" value="2026" required>
+            </div>
+
+            <!-- Subject Picker -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-book"></i> විෂය නාමය (Subject):</label>
+              <select id="examSubjectSelect" class="student-filter-select" onchange="handleSubjectSelectionChange()">
+                <option value="බුද්ධ ධර්මය">බුද්ධ ධර්මය (Buddhism)</option>
+                <option value="බෞද්ධ සංස්කෘතිය සහ ඉතිහාසය">බෞද්ධ සංස්කෘතිය සහ ඉතිහාසය (Buddhist Culture & History)</option>
+                <option value="පාලි භාෂාව">පාලි භාෂාව (Pali Language)</option>
+                <option value="ශාසන ඉතිහාසය">ශාසන ඉතිහාසය (Sasana History)</option>
+                <option value="අභිධර්මය">අභිධර්මය (Abhidhamma)</option>
+                <option value="custom">+ වෙනත් විෂයයක් (Custom Subject)...</option>
+              </select>
+              <input type="text" id="examCustomSubject" placeholder="විෂය නාමය මෙහි ඇතුළත් කරන්න..." style="display: none; margin-top: 8px;">
+            </div>
+
+            <!-- Marks Input & Dynamic Grade Preview -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-percent"></i> ලබාගත් ලකුණු (Marks out of 100):</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="number" id="examMarksInput" min="0" max="100" placeholder="උදා: 85" required oninput="updateLiveGradePreview()" style="flex: 1;">
+                <span id="examGradePreview" class="status-pill present" style="min-width: 90px; text-align: center; font-size: 0.85rem;">ශ්‍රේණිය: -</span>
+              </div>
+            </div>
+
+            <!-- Remarks -->
+            <div class="form-group" style="grid-column: span 2;">
+              <label><i class="fa-solid fa-comment-dots"></i> ගුරු අදහස් / සටහන් (Teacher Remarks):</label>
+              <input type="text" id="examRemarksInput" placeholder="උදා: විශිෂ්ට ප්‍රගතියක් පෙන්වයි, පාලි ගාථා කටපාඩම් කිරීම තවදුරටත් පුහුණු විය යුතුය...">
+            </div>
+
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+              <span class="save-status" id="status-exam">✓ වාර විභාග ලකුණු සාර්ථකව සටහන් කරන ලදී!</span>
+              <button type="submit" class="btn-save">
+                <i class="fa-solid fa-check-to-slot"></i> ලකුණු සටහන් කරන්න (Save Exam Marks)
+              </button>
+            </div>
+          </form>
+
+          <!-- Recorded Marks Roster Table -->
+          <div class="card-header" style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-list-check"></i> ලේඛනගත කළ වාර විභාග ලකුණු ලේඛනය (Recorded Marks Roster)</h3>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <label style="font-size: 0.85rem; font-weight: 600;">වාරය පිරික්සුම:</label>
+              <select id="examRosterTermFilter" class="student-filter-select" style="padding: 4px 8px; font-size: 0.82rem;" onchange="renderExamMarksTable()">
+                <option value="all">සියලුම වාර (All 3 Terms)</option>
+                <option value="1">1 වන වාරය පමණක් (Term 1 Only)</option>
+                <option value="2">2 වන වාරය පමණක් (Term 2 Only)</option>
+                <option value="3">3 වන වාරය පමණක් (Term 3 Only)</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ඇතුළත්වීමේ අංකය</th>
+                  <th>ශිෂ්‍යයාගේ නම</th>
+                  <th>ශ්‍රේණිය</th>
+                  <th>විභාග වාරය</th>
+                  <th>විෂයය (Subject)</th>
+                  <th>ලකුණු (Marks)</th>
+                  <th>සාමාර්ථය (Grade)</th>
+                  <th>සටහන්</th>
+                  <th>ක්‍රියාමාර්ග</th>
+                </tr>
+              </thead>
+              <tbody id="examMarksTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Class Rankings & Annual Performance Summary -->
+          <div class="card-header" style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-ranking-star"></i> පන්ති කුසලතා ස්ථාන සහ වාර්ෂික ප්‍රගතිය (Class Rankings & Performance)</h3>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span id="rankingsGradeBadge" class="audience-pill all"><i class="fa-solid fa-chalkboard-user"></i> 10 ශ්‍රේණිය</span>
+              <button type="button" class="btn-primary" style="padding: 5px 12px; font-size: 0.8rem;" onclick="renderClassRankingsTable()">
+                <i class="fa-solid fa-rotate"></i> යාවත්කාලීන කරන්න
+              </button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px; text-align: center;">ස්ථානය (Rank)</th>
+                  <th>ඇතුළත්වීමේ අංකය</th>
+                  <th>ශිෂ්‍යයාගේ නම</th>
+                  <th style="text-align: center;">1 වන වාරය</th>
+                  <th style="text-align: center;">2 වන වාරය</th>
+                  <th style="text-align: center;">3 වන වාරය</th>
+                  <th style="text-align: center;">වාර්ෂික සාමාන්‍යය %</th>
+                  <th style="text-align: center;">අවසාන සාමාර්ථය</th>
+                  <th>ප්‍රතිඵල තත්ත්වය</th>
+                </tr>
+              </thead>
+              <tbody id="classRankingsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Bulk Import Exam Marks Modal -->
+  <div class="admin-modal-overlay" id="bulkImportExamsModal" style="display: none;">
+    <div class="admin-modal-content" style="max-width: 820px;">
+      <div class="admin-modal-header">
+        <h3><i class="fa-solid fa-file-import" style="color: #10b981;"></i> විභාග ලකුණු තොග වශයෙන් ඇතුළත් කිරීම (Bulk Exam Marks CSV Import)</h3>
+        <button class="admin-modal-close" onclick="closeBulkImportExamsModal()">&times;</button>
+      </div>
+      
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; font-size: 0.88rem; color: #166534; line-height: 1.5;">
+        <strong><i class="fa-solid fa-circle-info"></i> උපදෙස්:</strong>
+        <ul style="margin: 6px 0 0 18px; padding: 0;">
+          <li>Excel හෝ CSV ගොනුව මඟින් සියලුම ශිෂ්‍යයන්ගේ විෂයානුබද්ධ විභාග ලකුණු එකවර පද්ධතියට උඩුගත කළ හැක.</li>
+          <li>ලකුණු 0 සිට 100 දක්වා පරාසයේ තිබිය යුතුය. සාමාර්ථය (A, B, C, S, W) ස්වයංක්‍රීයව නිවැරදිව ගණනය වේ.</li>
+          <li>නිවැරදි ආකෘතිය බලාගැනීමට පහත ආදර්ශ ගොනුව (Template) බාගත කරගන්න.</li>
+        </ul>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+        <button type="button" class="btn-save" style="background: #0284c7; padding: 8px 16px; font-size: 0.85rem;" onclick="downloadExamTemplate()">
+          <i class="fa-solid fa-download"></i> ආදර්ශ CSV ගොනුව බාගත කරන්න (Download Template)
+        </button>
+        <div style="flex: 1; min-width: 240px;">
+          <input type="file" id="bulkExamFileInput" accept=".csv,text/csv" onchange="handleExamCsvFileSelected(event)" style="display: block; width: 100%; padding: 7px; border: 1px dashed #94a3b8; border-radius: 6px; background: #f8fafc; font-size: 0.85rem;">
+        </div>
+      </div>
+
+      <!-- Preview parsed exam data -->
+      <div id="examBulkPreviewSection" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h4 style="margin: 0; color: var(--primary-blue); font-size: 0.95rem;">
+            <i class="fa-solid fa-table-list"></i> ගොනුවේ අන්තර්ගතය පෙරදසුන (<span id="examBulkCount">0</span> ක් හඳුනාගන්නා ලදී):
+          </h4>
+          <span class="status-pill present" id="examBulkStatusBadge">සූදානම්</span>
+        </div>
+        <div class="table-container" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <table>
+            <thead>
+              <tr>
+                <th>අංකය</th>
+                <th>ඇතුළත් අංකය</th>
+                <th>වාරය</th>
+                <th>වර්ෂය</th>
+                <th>විෂයය</th>
+                <th>ලකුණු</th>
+                <th>සාමාර්ථය</th>
+              </tr>
+            </thead>
+            <tbody id="examBulkPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 20px;">
+        <button type="button" class="btn-modal-cancel" onclick="closeBulkImportExamsModal()">අවලංගු කරන්න (Cancel)</button>
+        <button type="button" class="btn-save" id="btnSubmitBulkExams" style="background: #10b981;" onclick="submitBulkExamImport()" disabled>
+          <i class="fa-solid fa-cloud-arrow-up"></i> ලකුණු පද්ධතියට උඩුගත කරන්න (Import Marks)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script src="../JS/teacher.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ශිෂ්‍ය Dashboard | දහම් පාසල් ශිෂ්‍ය සාධුවරයා</title>
+  <!-- Google Fonts: Noto Sans Sinhala & Inter for crisp Sinhala script rendering -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/style.css">
+  <!-- Official PDF Generation & Verification QR Code Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="../JS/api.js"></script>
+</head>
+<body class="portal-page">
+  <!-- Sidebar Navigation -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-info">
+        <i class="fa-solid fa-dharmachakra"></i>
+        <div>
+          <h2>දහම් පාසල් ශිෂ්‍ය සාධුවරයා</h2>
+          <p>බෞද්ධ කටයුතු දෙපාර්තමේන්තුව</p>
+        </div>
+      </div>
+      <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation" title="මෙනුව විවෘත කරන්න">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a class="nav-link active" id="nav-dashboard" onclick="switchStudentPage('dashboard')">
+          <i class="fa-solid fa-house"></i> දළ විශ්ලේෂණය (Dashboard)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-study-materials" onclick="switchStudentPage('study-materials')">
+          <i class="fa-solid fa-book-bookmark"></i> අධ්‍යයන නිබන්ධන (Study Materials)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-attendance" onclick="switchStudentPage('attendance')">
+          <i class="fa-solid fa-calendar-check"></i> පැමිණීමේ වාර්තාව (Attendance)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-profile" onclick="switchStudentPage('profile')">
+          <i class="fa-solid fa-user-graduate"></i> ශිෂ්‍ය තොරතුරු (Profile)
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="nav-final-report" onclick="switchStudentPage('final-report')">
+          <i class="fa-solid fa-file-invoice"></i> අවසන් වාර්තාව (Final Report)
+        </a>
+      </li>
+      <li class="nav-item" style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 10px;">
+        <a class="nav-link" href="OnboardingPage.html">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> භූමිකාව තෝරන්න (Select Role)
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="header-bar">
+      <div class="page-title">
+        <h1 id="current-page-title">ශිෂ්‍ය Dashboard (Student Dashboard)</h1>
+        <p>ශ්‍රී ලංකා බෞද්ධ කටයුතු දෙපාර්තමේන්තුව - ඩිජිටල් ශිෂ්‍ය සාධුවරයා පද්ධතිය</p>
+      </div>
+      
+      <!-- Header Controls: User Chip, Logout & Print -->
+      <div class="user-header-controls" id="header-user-area" style="display: none;">
+        <div class="user-session-chip">
+          <img id="headerStudentAvatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" alt="Student">
+          <div class="user-session-info">
+            <span class="student-chip-name" id="headerStudentName">සමන් කුමාර</span>
+            <span class="student-chip-grade" id="headerStudentGrade">10 ශ්‍රේණිය | DPS/2026/104</span>
+          </div>
+        </div>
+        <button class="btn-print" onclick="window.print()" title="මුද්‍රණය කරන්න">
+          <i class="fa-solid fa-print"></i> මුද්‍රණය
+        </button>
+        <button class="btn-logout" onclick="handleStudentLogout()" title="ගිණුමෙන් ඉවත් වන්න">
+          <i class="fa-solid fa-right-from-bracket"></i> ඉවත්වන්න
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Student Login Screen (Shown when not authenticated) -->
+    <div id="student-login-view" class="student-login-container">
+      <div class="student-login-card">
+        <div class="login-icon-badge">
+          <i class="fa-solid fa-dharmachakra"></i>
+        </div>
+        <h2>ශිෂ්‍ය පිවිසුම (Student Login)</h2>
+        <p class="login-subtitle">දහම් පාසල් ශිෂ්‍ය තොරතුරු, පැමිණීම සහ අවසන් වාර්තා සඳහා පිවිසෙන්න.</p>
+
+        <form class="login-form" onsubmit="handleStudentLogin(event)">
+          <div class="login-error-msg" id="loginErrorMsg" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span id="loginErrorText">ඇතුළත් කළ අංකය හෝ මුරපදය වැරදියි!</span>
+          </div>
+
+          <div class="form-group">
+            <label for="loginRegNo">ඇතුළත්වීමේ අංකය (Student Admission / Reg No):</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-id-card" aria-hidden="true"></i>
+              <input type="text" id="loginRegNo" name="regNo" placeholder="උදා: DPS/2026/104" autocomplete="username" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="next" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">මුරපදය / PIN (Password):</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+              <input type="password" id="loginPassword" name="pin" placeholder="මුරපදය ඇතුළත් කරන්න" autocomplete="current-password" enterkeyhint="done" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login-submit">
+            <span>පිවිසෙන්න (Login)</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </form>
+
+        <div class="demo-credentials-box">
+          <p>පරීක්ෂා කිරීම සඳහා ක්ෂණික ගිණුමක් තෝරන්න (Demo Accounts):</p>
+          <div class="demo-account-chips">
+            <button type="button" class="demo-chip" onclick="quickFillLogin('DPS/2026/104', '1234')">
+              <i class="fa-solid fa-user-check" aria-hidden="true"></i> සමන් කුමාර (Grade 10)
+            </button>
+            <button type="button" class="demo-chip" onclick="quickFillLogin('DPS/2026/088', '1234')">
+              <i class="fa-solid fa-user-check" aria-hidden="true"></i> චමත්කා නිම්නදි (Grade 9)
+            </button>
+            <button type="button" class="demo-chip" onclick="quickFillLogin('DPS/2026/065', '1234')">
+              <i class="fa-solid fa-user-check" aria-hidden="true"></i> රවිඳු ප්‍රභාෂ්වර (Grade 8)
+            </button>
+          </div>
+          <div class="login-back-row">
+            <a href="OnboardingPage.html" class="back-to-onboarding-link">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> භූමිකාව තෝරන පිටුවට ආපසු යන්න (Back to Role Selection)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: Authenticated Student Portal (Shown when logged in) -->
+    <div id="student-portal-view" style="display: none;">
+
+      <!-- SECTION: Dashboard Panel -->
+      <div id="student-dashboard" class="page-section active">
+        <div class="card welcome-card">
+          <div class="welcome-inner">
+            <div>
+              <h2 id="welcomeGreeting">සාදරයෙන් පිළිගනිමු, සමන් කුමාර!</h2>
+              <p>දහම් පාසල් ශිෂ්‍ය ප්‍රගති සමාලෝචනය, පැමිණීම සහ වාර්ෂික ඇගයීම් සාරාංශය.</p>
+            </div>
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="metric-card">
+            <span>සමස්ත වැඩසටහන් (Total Days)</span>
+            <strong id="dashTotalEvents">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>පැමිණි වාර ගණන (Present)</span>
+            <strong id="dashPresentCount" style="color: #15803d;">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>නොපැමිණි වාර (Absent)</span>
+            <strong id="dashAbsentCount" style="color: #b91c1c;">0</strong>
+          </div>
+          <div class="metric-card">
+            <span>පැමිණීමේ ප්‍රතිශතය (Attendance)</span>
+            <strong id="dashAttendanceRate">0%</strong>
+          </div>
+          <div class="metric-card" style="border-left: 4px solid var(--accent-yellow);">
+            <span>ලද පදක්කම් (Badges Earned)</span>
+            <strong id="dashBadgesCount" style="color: #b45309;">0</strong>
+          </div>
+        </div>
+
+        <!-- Attendance Progress Indicator -->
+        <div class="card" style="padding: 20px 25px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 700; color: var(--primary-blue); font-size: 0.95rem;">
+              <i class="fa-solid fa-chart-simple" style="color: var(--accent-yellow);"></i> වාර්ෂික පැමිණීමේ ප්‍රගතිය (Annual Attendance Goal: 80%+)
+            </span>
+            <strong id="dashProgressLabel" style="color: #15803d;">0%</strong>
+          </div>
+          <div class="attendance-progress-wrap">
+            <div class="attendance-progress-bar" id="dashProgressBar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Daham Pasala Badges & Honors Showcase on Student Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-award" style="color: var(--accent-yellow);"></i> මගේ කුසලතා පදක්කම් සහ සම්මාන (My Badges & Honors)</h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="status-pill present" id="dashBadgesCountPill">0 පදක්කම්</span>
+              <span class="badge-points-tag" id="dashBadgesPointsTotal"><i class="fa-solid fa-star"></i> 0 Pts</span>
+            </div>
+          </div>
+          <p class="card-note">දහම් පාසල් ආචාර්ය මණ්ඩලය සහ ප්‍රධානාචාර්ය ස්වාමින්වහන්සේ විසින් ඔබගේ සුවිශේෂී සීල ශික්ෂණය, ආදර්ශවත් විනය සහ ධර්ම ඥානය අගය කරමින් පිරිනමන ලද ගෞරවනීය පදක්කම්. සහතිකය බැලීමට පදක්කම මත ක්ලික් කරන්න.</p>
+
+          <!-- Dynamic Badges Gallery Grid on Dashboard -->
+          <div class="badge-gallery-grid" id="studentBadgesGalleryGrid">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+
+        <!-- Quick Summary & Actions -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-bullhorn"></i> මෑතකාලීන ක්‍රියාකාරකම් & ඇගයීම් සටහන්</h3>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>වැඩසටහන / ක්‍රියාකාරකම</th>
+                  <th>දිනය</th>
+                  <th>තත්ත්වය</th>
+                  <th>ලකුණු</th>
+                  <th>සටහන්</th>
+                </tr>
+              </thead>
+              <tbody id="dashRecentTableBody"></tbody>
+            </table>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+            <button class="btn-save" style="background: var(--secondary-blue);" onclick="switchStudentPage('attendance')">
+              <i class="fa-solid fa-list-check"></i> සම්පූර්ණ පැමිණීමේ ලැයිස්තුව
+            </button>
+            <button class="btn-save" onclick="switchStudentPage('final-report')">
+              <i class="fa-solid fa-file-pdf"></i> අවසන් වාර්තාව සකස් කරන්න
+            </button>
+          </div>
+        </div>
+
+        <!-- Daham Pasala Study Materials on Dashboard -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-book-bookmark" style="color: var(--secondary-blue);"></i> අධ්‍යයන නිබන්ධන & ධර්ම සටහන් (Study Materials & Notes)</h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="status-pill present" id="dashStudyMaterialCount">0 නිබන්ධන</span>
+              <button class="filter-btn active" id="btnDashFilterMyGrade" onclick="filterStudentDashboardMaterials('mygrade', this)" style="padding: 4px 10px; font-size: 0.78rem;">
+                <i class="fa-solid fa-graduation-cap"></i> මගේ ශ්‍රේණිය
+              </button>
+              <button class="filter-btn" id="btnDashFilterAll" onclick="filterStudentDashboardMaterials('all', this)" style="padding: 4px 10px; font-size: 0.78rem;">
+                <i class="fa-solid fa-layer-group"></i> සියල්ල (All)
+              </button>
+            </div>
+          </div>
+          <p class="card-note">දහම් පාසල් ආචාර්ය මණ්ඩලය මඟින් ඔබගේ ශ්‍රේණියට අදාළව නිකුත් කරන ලද ධර්ම අධ්‍යයන නිබන්ධන, පාඩම් සටහන් සහ ආදර්ශ ප්‍රශ්න පත්‍ර.</p>
+
+          <!-- Dynamic Materials Grid on Dashboard -->
+          <div class="study-materials-grid" id="studentDashboardMaterialsGrid">
+            <!-- Rendered dynamically by JS -->
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+            <button class="btn-save" style="background: var(--secondary-blue);" onclick="switchStudentPage('study-materials')">
+              <i class="fa-solid fa-book-open-reader"></i> සම්පූර්ණ නිබන්ධන පුස්තකාලය (View Full Library)
+            </button>
+          </div>
+        </div>
+
+        <!-- Daham Pasala Announcements & Notices -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3><i class="fa-solid fa-bullhorn" style="color: var(--accent-yellow);"></i> දහම් පාසල් නිවේදන පුවරුව (Announcements & Notices)</h3>
+            <span class="status-pill present" id="studentAnnouncementCount">0 නිවේදන</span>
+          </div>
+          <div id="studentAnnouncementsFeed" class="announcements-feed" style="margin-top: 15px;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Dedicated Study Materials Library Panel -->
+      <div id="student-materials" class="page-section">
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-book-open-reader"></i> දහම් පාසල් අධ්‍යයන නිබන්ධන පුස්තකාලය (Study Materials Library)</h3>
+            <span class="status-pill present" id="fullStudyMaterialCount">0 නිබන්ධන</span>
+          </div>
+          <p class="card-note">දහම් පාසල් ආචාර්ය මණ්ඩලය විසින් උඩුගත කරන ලද සියලුම ධර්ම අධ්‍යයන නිබන්ධන, පාඩම් සටහන් සහ ප්‍රශ්නෝත්තර මෙතැනින් කියවන්න සහ බාගත කරන්න.</p>
+
+          <!-- Filter & Search Controls -->
+          <div class="roster-filter-block">
+            <div class="roster-col-grade">
+              <label class="sub-label"><i class="fa-solid fa-filter"></i> වර්ගය (Category Filter):</label>
+              <select id="studentMaterialTypeFilter" class="student-filter-select" onchange="renderFullStudyMaterials()">
+                <option value="all">සියලුම වර්ග (All Types)</option>
+                <option value="PDF නිබන්ධනය">PDF නිබන්ධන (PDF Notes)</option>
+                <option value="ධර්ම සටහන්">ධර්ම සටහන් (Dharma Lessons)</option>
+                <option value="ප්‍රශ්නෝත්තර">ප්‍රශ්නෝත්තර (Model Papers)</option>
+                <option value="කියවීම් සටහන">කියවීම් සටහන් (Reading Notes)</option>
+              </select>
+            </div>
+            <div class="roster-col-search">
+              <label class="sub-label"><i class="fa-solid fa-magnifying-glass"></i> නිබන්ධනය සොයන්න (Search Materials):</label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="studentMaterialSearchQuery" placeholder="මාතෘකාව හෝ කරුණු සොයන්න..." oninput="renderFullStudyMaterials()">
+              </div>
+            </div>
+          </div>
+
+          <div class="study-materials-grid" id="studentFullMaterialsGrid">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+
+      <!-- SECTION: Profile Panel (Read-Only Official Student Record) -->
+      <div id="student-profile" class="page-section">
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h3><i class="fa-solid fa-id-card"></i> නිල ශිෂ්‍ය තොරතුරු (Official Student Profile)</h3>
+            <span class="status-pill present" style="display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-shield-halved"></i> පරිපාලනය මඟින් සත්‍යාපිතයි (Verified Record)
+            </span>
+          </div>
+
+          <!-- Official Administrative Lock Notice -->
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid var(--secondary-blue); border-radius: 8px; padding: 14px 18px; margin: 15px 0 20px; display: flex; align-items: flex-start; gap: 12px;">
+            <i class="fa-solid fa-circle-info" style="color: var(--secondary-blue); font-size: 1.25rem; margin-top: 2px;"></i>
+            <div style="font-size: 0.88rem; color: #1e3a8a; line-height: 1.5;">
+              <strong>සැලකිය යුතුයි (Notice):</strong> ශිෂ්‍ය තොරතුරු යාවත්කාලීන කිරීම සහ නව සිසුන් ඇතුළත් කිරීම දහම් පාසල් පරිපාලන අංශය (Admin) මඟින් පමණක් සිදු කරනු ලබන අතර, සිසුන්ට තොරතුරු නැරඹීමට පමණක් (Read-Only) අවසර ඇත. යම් සංශෝධනයක් අවශ්‍ය නම් කරුණාකර ප්‍රධානාචාර්යතුමන් හෝ පරිපාලන කාර්යාලය අමතන්න.
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="photo-upload-box" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; background: #f8fafc;">
+              <img id="studentPhotoPreview" class="photo-preview" src="" alt="ශිෂ්‍ය ඡායාරූපය" style="display: block; width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px; border: 3px solid var(--accent-yellow); box-shadow: 0 4px 10px rgba(0,0,0,0.08);">
+              <span class="official-badge-tag">
+                <i class="fa-solid fa-id-badge"></i> නිල හැඳුනුම් ඡායාරූපය
+              </span>
+            </div>
+
+            <div class="form-grid nested-grid">
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ශිෂ්‍යයාගේ/ශිෂ්‍යාවගේ නම (සම්පූර්ණ නම):</label>
+                <input type="text" id="profFullName" value="" readonly class="readonly-field">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ශ්‍රේණිය (Grade / Class):</label>
+                <input type="text" id="profGrade" value="" readonly class="readonly-field">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ඇතුළත්වීමේ අංකය (Admission / Reg No):</label>
+                <input type="text" id="profRegNo" value="" readonly class="readonly-field">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> පාසල් වාරය / වර්ෂය:</label>
+                <input type="text" id="profTerm" value="2026 / පළමු වාරය" readonly class="readonly-field">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> උපන් දිනය (Date of Birth):</label>
+                <input type="date" id="profDob" value="" readonly class="readonly-field">
+              </div>
+              <div class="form-group">
+                <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ඇතුළත් වූ දිනය (Admission Date):</label>
+                <input type="date" id="profAdmissionDate" value="" readonly class="readonly-field">
+              </div>
+            </div>
+          </div>
+
+          <h4 style="margin-top: 20px; color: var(--primary-blue); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-users" style="color: var(--secondary-blue);"></i> මව් / පියා / භාරකරුගේ තොරතුරු (Guardian Information)
+          </h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> භාරකරුගේ නම:</label>
+              <input type="text" id="profGuardianName" value="" readonly class="readonly-field">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ස්ථිර ලිපිනය:</label>
+              <input type="text" id="profAddress" value="" readonly class="readonly-field">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> දුරකථන අංකය (Contact No):</label>
+              <input type="tel" id="profContact" value="" readonly class="readonly-field">
+            </div>
+          </div>
+
+          <h4 style="margin-top: 20px; color: var(--primary-blue); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-school" style="color: var(--secondary-blue);"></i> දහම් පාසල් තොරතුරු (Dhamma School Details)
+          </h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> දහම් පාසලේ නම:</label>
+              <input type="text" id="profSchoolName" value="ශ්‍රී සුගත ධර්ම විද්‍යාලය" readonly class="readonly-field">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> පන්තිභාර ආචාර්යතුමා / ආචාර්යතුමිය:</label>
+              <input type="text" id="profTeacherName" value="ධර්මසේන අමරසිංහ මයා" readonly class="readonly-field">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock" style="font-size:0.75rem; color:var(--text-muted); margin-right:4px;"></i> ප්‍රධානාචාර්ය ස්වාමීන් වහන්සේ:</label>
+              <input type="text" id="profPrincipalName" value="පූජ්‍ය මාදම්පේ සුමනසාර නාහිමි" readonly class="readonly-field">
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; padding: 14px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.88rem;">
+              <i class="fa-solid fa-lock" style="color: var(--primary-blue);"></i>
+              <span>මෙම ශිෂ්‍ය තොරතුරු පරිපාලන අංශය මඟින් ආරක්ෂිතව තබා ඇත (Read-Only Student Archive).</span>
+            </div>
+            <span class="status-pill present" style="font-size: 0.8rem;">
+              <i class="fa-solid fa-shield-halved"></i> නිල වාර්තාවකි
+            </span>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- SECTION: Attendance Panel -->
+      <div id="student-attendance" class="page-section">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-calendar-check"></i> [D] ශිෂ්‍ය පැමිණීමේ සම්පූර්ණ වාර්තාව (Attendance Records)</h3>
+          </div>
+          <p class="card-note">දහම් පාසල් ඉරිදා දිනයන්, පෝහෝ දින අටසිල් සමාදානය සහ විශේෂ ආගමික හා විෂය සමගාමී කාර්යයන් සඳහා පැමිණීමේ විස්තර.</p>
+
+          <!-- Attendance Filter Bar -->
+          <div class="filter-bar">
+            <span style="font-weight: 700; font-size: 0.85rem; color: var(--primary-blue);">වර්ගීකරණය:</span>
+            <button class="filter-btn active" onclick="filterAttendance('all', this)">
+              <i class="fa-solid fa-layer-group"></i> සියල්ල (All)
+            </button>
+            <button class="filter-btn" onclick="filterAttendance('sunday', this)">
+              <i class="fa-solid fa-school"></i> ඉරිදා දහම් පාසල (Sundays)
+            </button>
+            <button class="filter-btn" onclick="filterAttendance('poya', this)">
+              <i class="fa-solid fa-moon"></i> පෝහෝ දින අටසිල් (Poya Sil)
+            </button>
+            <button class="filter-btn" onclick="filterAttendance('event', this)">
+              <i class="fa-solid fa-hand-holding-heart"></i> විශේෂ වැඩසටහන් (Events)
+            </button>
+            <button class="filter-btn" onclick="filterAttendance('good_deed', this)">
+              <i class="fa-solid fa-seedling" style="color: #ec4899;"></i> 🌸 යහපත් ක්‍රියා / මල් පූජා (Good Deeds)
+            </button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>වැඩසටහන / ක්‍රියාකාරකම (Event)</th>
+                  <th>වර්ගය (Category)</th>
+                  <th>දිනය (Date)</th>
+                  <th>පැමිණීම (Status)</th>
+                  <th>ඇගයීම් ලකුණු (Score)</th>
+                  <th>ගුරු නිර්දේශ / සටහන් (Remarks)</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceFullTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: Final Report Generator Panel -->
+      <div id="student-final-report" class="page-section">
+        <!-- Report Generator Control Bar -->
+        <div class="report-controls-card">
+          <div class="report-filters">
+            <label for="reportTermSelect"><i class="fa-solid fa-calendar-days"></i> ඇගයීම් වාරය / කාල පරිච්ඡේදය:</label>
+            <select id="reportTermSelect">
+              <option value="annual">වාර්ෂික අවසන් ඇගයීම් වාර්තාව (Annual Final Report)</option>
+              <option value="term1">පළමු වාර ප්‍රගති වාර්තාව (Term 1 Report)</option>
+              <option value="term2">දෙවන වාර ප්‍රගති වාර්තාව (Term 2 Report)</option>
+              <option value="term3">තෙවන වාර ප්‍රගති වාර්තාව (Term 3 Report)</option>
+            </select>
+
+            <label for="reportYearSelect" style="margin-left: 10px;">වර්ෂය:</label>
+            <select id="reportYearSelect">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+
+          <div class="report-action-buttons">
+            <button type="button" class="btn-generate-report" onclick="generateFinalReport()">
+              <i class="fa-solid fa-arrows-rotate"></i> වාර්තාව සකස් කරන්න
+            </button>
+            <button type="button" class="btn-save" id="btnDownloadPdf" style="background: #15803d; color: #ffffff;" onclick="downloadOfficialPdfReport()">
+              <i class="fa-solid fa-file-pdf"></i> නිල PDF වාර්තාව බාගත කරන්න
+            </button>
+            <button type="button" class="btn-print" onclick="printFinalReportDocument()">
+              <i class="fa-solid fa-print"></i> මුද්‍රණය කරන්න
+            </button>
+          </div>
+        </div>
+
+        <!-- Official Report Card Document Preview -->
+        <div class="final-report-paper" id="final-report-document">
+          <!-- Translucent Dharmachakra Watermark -->
+          <div class="report-watermark" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="340" height="340" xmlns="http://www.w3.org/2000/svg" style="opacity: 0.045;">
+              <circle cx="50" cy="50" r="46" fill="none" stroke="#1e3a8a" stroke-width="3.5"/>
+              <circle cx="50" cy="50" r="36" fill="none" stroke="#1e3a8a" stroke-width="2"/>
+              <g stroke="#1e3a8a" stroke-width="3" stroke-linecap="round">
+                <line x1="50" y1="14" x2="50" y2="36"/>
+                <line x1="50" y1="64" x2="50" y2="86"/>
+                <line x1="14" y1="50" x2="36" y2="50"/>
+                <line x1="64" y1="50" x2="86" y2="50"/>
+                <line x1="24.5" y1="24.5" x2="40.1" y2="40.1"/>
+                <line x1="59.9" y1="59.9" x2="75.5" y2="75.5"/>
+                <line x1="75.5" y1="24.5" x2="59.9" y2="40.1"/>
+                <line x1="40.1" y1="59.9" x2="24.5" y2="75.5"/>
+              </g>
+              <circle cx="50" cy="50" r="14" fill="none" stroke="#1e3a8a" stroke-width="2.5"/>
+              <circle cx="50" cy="50" r="6" fill="#1e3a8a"/>
+            </svg>
+          </div>
+
+          <!-- Document Official Header -->
+          <div class="report-doc-header">
+            <div class="report-doc-emblem">
+              <svg class="report-emblem-svg" viewBox="0 0 100 100" width="76" height="76" xmlns="http://www.w3.org/2000/svg" style="display:inline-block; vertical-align:middle;">
+                <!-- Dharmachakra (Wheel of Dhamma) Official Emblem -->
+                <circle cx="50" cy="50" r="46" fill="none" stroke="#d97706" stroke-width="3.5"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#b45309" stroke-width="1.5"/>
+                <circle cx="50" cy="7" r="2.2" fill="#f59e0b"/>
+                <circle cx="50" cy="93" r="2.2" fill="#f59e0b"/>
+                <circle cx="7" cy="50" r="2.2" fill="#f59e0b"/>
+                <circle cx="93" cy="50" r="2.2" fill="#f59e0b"/>
+                <circle cx="19.6" cy="19.6" r="2.2" fill="#f59e0b"/>
+                <circle cx="80.4" cy="19.6" r="2.2" fill="#f59e0b"/>
+                <circle cx="19.6" cy="80.4" r="2.2" fill="#f59e0b"/>
+                <circle cx="80.4" cy="80.4" r="2.2" fill="#f59e0b"/>
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#d97706" stroke-width="2"/>
+                <g stroke="#d97706" stroke-width="3.2" stroke-linecap="round">
+                  <line x1="50" y1="14" x2="50" y2="36"/>
+                  <line x1="50" y1="64" x2="50" y2="86"/>
+                  <line x1="14" y1="50" x2="36" y2="50"/>
+                  <line x1="64" y1="50" x2="86" y2="50"/>
+                  <line x1="24.5" y1="24.5" x2="40.1" y2="40.1"/>
+                  <line x1="59.9" y1="59.9" x2="75.5" y2="75.5"/>
+                  <line x1="75.5" y1="24.5" x2="59.9" y2="40.1"/>
+                  <line x1="40.1" y1="59.9" x2="24.5" y2="75.5"/>
+                </g>
+                <circle cx="50" cy="50" r="14" fill="#1e3a8a" stroke="#d97706" stroke-width="2.5"/>
+                <circle cx="50" cy="50" r="8" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>
+                <circle cx="50" cy="50" r="3" fill="#ffffff"/>
+              </svg>
+            </div>
+            <h2>ශ්‍රී ලංකා ප්‍රජාතාන්ත්‍රික සමාජවාදී ජනරජය</h2>
+            <h3>බෞද්ධ කටයුතු දෙපාර්තමේන්තුව</h3>
+            <p id="repDocSchoolName">ශ්‍රී සුගත ධර්ම විද්‍යාලය - කොළඹ ශාඛාව</p>
+            <div class="report-doc-title-badge" id="repDocTitleBadge">
+              දහම් පාසල් ශිෂ්‍ය සාධුවරයා - වාර්ෂික ප්‍රගති හා ඇගයීම් අවසන් වාර්තාව
+            </div>
+          </div>
+
+          <!-- Student & School Metadata -->
+          <div class="report-student-meta-grid">
+            <div class="report-meta-item">
+              <span>ශිෂ්‍යයාගේ නම:</span> <strong id="repMetaStudentName">-</strong>
+            </div>
+            <div class="report-meta-item">
+              <span>ඇතුළත්වීමේ අංකය:</span> <strong id="repMetaRegNo">-</strong>
+            </div>
+            <div class="report-meta-item">
+              <span>ශ්‍රේණිය:</span> <strong id="repMetaGrade">-</strong>
+            </div>
+            <div class="report-meta-item">
+              <span>අධ්‍යයන වර්ෂය:</span> <strong id="repMetaYear">2026</strong>
+            </div>
+            <div class="report-meta-item">
+              <span>වාර්තාව නිකුත් කළ දිනය:</span> <strong id="repMetaDate">-</strong>
+            </div>
+            <div class="report-meta-item">
+              <span>පන්තිභාර ආචාර්ය:</span> <strong id="repMetaTeacher">-</strong>
+            </div>
+          </div>
+
+          <!-- Metric Badges Overview -->
+          <div class="summary-grid" style="margin-bottom: 20px;">
+            <div class="metric-card" style="padding: 12px 16px;">
+              <span>පැමිණීමේ ප්‍රතිශතය</span>
+              <strong id="repMetricRate" style="font-size: 1.4rem; color: #15803d;">0%</strong>
+            </div>
+            <div class="metric-card" style="padding: 12px 16px;">
+              <span>පෝහෝ දින අටසිල්</span>
+              <strong id="repMetricSil" style="font-size: 1.4rem; color: var(--primary-blue);">0 දින</strong>
+            </div>
+            <div class="metric-card" style="padding: 12px 16px;">
+              <span>විභාග සාමාන්‍යය</span>
+              <strong id="repMetricExamAvg" style="font-size: 1.4rem; color: var(--secondary-blue);">0%</strong>
+            </div>
+            <div class="metric-card" style="padding: 12px 16px;">
+              <span>පන්තියේ ස්ථානය (Rank)</span>
+              <strong id="repMetricRank" style="font-size: 1.4rem; color: #7c3aed;">-</strong>
+            </div>
+            <div class="metric-card" style="padding: 12px 16px;">
+              <span>සමස්ත ශ්‍රේණිය (Grade)</span>
+              <strong id="repMetricOverallGrade" style="font-size: 1.4rem; color: #d97706;">විශිෂ්ට (A)</strong>
+            </div>
+          </div>
+
+          <!-- Section 1: Academic & Dhamma Subject Marks -->
+          <div class="report-section-title">
+            <i class="fa-solid fa-graduation-cap"></i> 01. විෂයානුබද්ධ විභාග ප්‍රතිඵල සටහන (Academic Examination Marks)
+          </div>
+          <div class="table-container">
+            <table id="repExamTable">
+              <thead>
+                <tr>
+                  <th style="min-width: 180px;">විෂය නාමය (Subject)</th>
+                  <th style="text-align: center;">1 වන වාරය (Term 1)</th>
+                  <th style="text-align: center;">2 වන වාරය (Term 2)</th>
+                  <th style="text-align: center;">3 වන වාරය (Term 3)</th>
+                  <th style="text-align: center;">වාර්ෂික සාමාන්‍යය</th>
+                  <th style="text-align: center;">අවසාන සාමාර්ථය</th>
+                  <th>ගුරු අදහස් / සටහන් (Remarks)</th>
+                </tr>
+              </thead>
+              <tbody id="repExamTableBody"></tbody>
+              <tfoot>
+                <tr style="background: #f1f5f9; font-weight: bold;">
+                  <td>වාර සාමාන්‍යය (Term Averages)</td>
+                  <td id="repExamTerm1Avg" style="text-align: center;">-</td>
+                  <td id="repExamTerm2Avg" style="text-align: center;">-</td>
+                  <td id="repExamTerm3Avg" style="text-align: center;">-</td>
+                  <td id="repExamTotalMarks" style="text-align: center;">-</td>
+                  <td id="repExamAvgGrade" style="text-align: center;">-</td>
+                  <td id="repExamAnnualSummary">-</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Clean Page Break for Multi-page Print & PDF Export -->
+          <div class="html2pdf__page-break"></div>
+
+          <!-- Section 2: Practical & Co-Curricular Activities (A-G Daham Pasala Sadhuvaraya) -->
+          <div class="report-section-title" style="margin-top: 25px;">
+            <i class="fa-solid fa-award"></i> 02. විෂය සමගාමී හා ප්‍රායෝගික සාධුවරයා ඇගයීම් සාරාංශය (A - G Evaluation)
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ඇගයීම් අංශය (Category)</th>
+                  <th>සහභාගීත්වය / වාර ගණන</th>
+                  <th>ලකුණු (Score / 10)</th>
+                  <th>ඇගයීම් මට්ටම (Evaluation Status)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>[A] ප්‍රායෝගික & විෂය සමගාමී ක්‍රියාකාරකම්</strong> (ශ්‍රමදාන, පෙරහැර, රුක් රෝපණ)</td>
+                  <td id="repRowA_Count">වාර 02 කට සහභාගී විය</td>
+                  <td id="repRowA_Score"><strong>9.5</strong> / 10</td>
+                  <td id="repRowA_Status"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[B] පෝහෝ දින අටසිල් සමාදානය</strong> (පන්සල් පැමිණීම සහ සීල සමාදානය)</td>
+                  <td id="repSilCountCell">පෝය දින 0 කට සහභාගී විය</td>
+                  <td id="repRowB_Score"><strong>10.0</strong> / 10</td>
+                  <td id="repRowB_Status"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[C] යහපත් ක්‍රියාකාරකම් පිළිබඳ ශිෂ්‍ය සටහන්</strong> (සමාජ සේවා සහ ගුණධර්ම)</td>
+                  <td id="repDeedsCountCell">සටහන් 0 ක් සම්පූර්ණයි</td>
+                  <td id="repDeedsScoreCell"><strong>10.0</strong> / 10</td>
+                  <td id="repDeedsStatusCell"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[D] දහම් පාසල් පැමිණීමේ වාර්තාව</strong> (නිරන්තර ඉරිදා පැමිණීම)</td>
+                  <td id="repAttDaysCell">දින 0 / 0</td>
+                  <td id="repAttScoreCell"><strong>0.0</strong> / 10</td>
+                  <td id="repRowD_Status"><span class="status-pill present">ඉතා හොඳයි (Very Good)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[E] ගුරු මණ්ඩලයේ අනෙකුත් ඇගයීම්</strong> (ශිෂ්‍ය විනය සහ ආදර්ශවත් හැසිරීම)</td>
+                  <td id="repRowE_Count">නිරීක්ෂණ සටහන් අනුමතයි</td>
+                  <td id="repRowE_Score"><strong>9.0</strong> / 10</td>
+                  <td id="repRowE_Status"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[F] බුද්ධ පූජා මල් වන්දනාව</strong> (ඉරිදා පැමිණීමේදී මල් පූජාවට දායක වීම)</td>
+                  <td id="repRowF_Count">මල් පූජා 0 ක් සම්පූර්ණයි</td>
+                  <td id="repRowF_Score"><strong>10.0</strong> / 10</td>
+                  <td id="repRowF_Status"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+                <tr>
+                  <td><strong>[G] දෙමව්පියන්ගේ ඇගයීම</strong> (නිවසේ දී බෞද්ධ පිළිවෙත් පිරීම)</td>
+                  <td id="repRowG_Count">දෙමව්පිය අත්සනින් තහවුරුයි</td>
+                  <td id="repRowG_Score"><strong>9.5</strong> / 10</td>
+                  <td id="repRowG_Status"><span class="status-pill present">විශිෂ්ටයි (Distinction)</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 3: Awarded Badges & Merit Honors -->
+          <div class="report-section-title" style="margin-top: 25px;">
+            <i class="fa-solid fa-medal"></i> 03. ශිෂ්‍යයා ලබාගත් නිල කුසලතා පදක්කම් & සම්මාන (Awarded Badges & Honors)
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>පදක්කම් නාමය (Badge / Honor)</th>
+                  <th>පිරිනැමූ දිනය</th>
+                  <th>කුසලතා ලකුණු (Points)</th>
+                  <th>හේතුව සහ ඇගයීම් සටහන (Citation / Remarks)</th>
+                </tr>
+              </thead>
+              <tbody id="repBadgesTableBody">
+                <!-- Rendered dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Conduct & General Remarks -->
+          <div class="report-box" style="margin-top: 22px; background: #fff; border: 1px solid var(--border-color);">
+            <h4 style="color: var(--primary-blue); margin-bottom: 6px;">ශිෂ්‍ය චර්යා සහතිකය සහ සාමාන්‍ය නිර්දේශය (Conduct & Character Certificate)</h4>
+            <p id="repConductText" style="font-size: 0.88rem; line-height: 1.6; margin-bottom: 0;">
+              මෙම ශිෂ්‍යයා වර්ෂය තුළ දහම් පාසලේ නීති රීති වලට ගරු කරමින්, ගුරු දෙගුරුන්ට කීකරුව ආදර්ශවත් යහපත් චරිතයකින් යුතුව අධ්‍යයන කටයුතුවල නිරත වූ බවත්, සියලුම ආගමික කටයුතු සඳහා උනන්දුවෙන් දායක වූ බවත් සහතික කරමි.
+            </p>
+          </div>
+
+          <!-- Official Signatures and Seals -->
+          <div class="report-signatures-grid">
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <span>පන්තිභාර ආචාර්යතුමාගේ අත්සන</span>
+              <span style="font-size: 0.72rem; color: #94a3b8;" id="repSigTeacher">-</span>
+            </div>
+            <div class="signature-box">
+              <div class="official-seal-box">
+                <span>නිල මුද්‍රාව<br>OFFICIAL<br>SEAL</span>
+              </div>
+              <span>දහම් පාසල් නිල මුද්‍රාව</span>
+            </div>
+            <div class="signature-box">
+              <div class="signature-line"></div>
+              <span>ප්‍රධානාචාර්ය හිමියන්ගේ අත්සන</span>
+              <span style="font-size: 0.72rem; color: #94a3b8;" id="repSigPrincipal">-</span>
+            </div>
+          </div>
+
+          <!-- Official Security Footer & Verification QR Code -->
+          <div class="report-security-footer">
+            <div id="reportQrCode" class="report-qr-code"></div>
+            <div class="report-security-info">
+              <span style="font-weight: 600; color: #475569;">ඩිජිටල් සත්‍යාපන කේතය (Digital Verification QR):</span>
+              <strong id="repSecurityCode" style="font-family: monospace; font-size: 0.88rem; color: var(--primary-blue); display: block; margin: 2px 0;">DPS-CERT-2026-DPS2026104</strong>
+              <p style="margin: 0; font-size: 0.74rem; color: #64748b;">මෙම වාර්තාව ශ්‍රී සුගත දහම් පාසල් මධ්‍යම ලේඛනාගාර දත්ත පද්ධතිය මඟින් නිල වශයෙන් සහතික කරන ලද මුද්‍රිත පිටපතකි.</p>
+            </div>
+            <div class="report-security-badge" style="text-align: right; font-size: 0.75rem; color: #64748b; min-width: 140px;">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block; margin: 0 auto 4px;">
+                <path d="M5 22h14"/>
+                <path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4.73 13.73L3 17h18l-1.73-3.27Z"/>
+                <path d="M12 13V2"/>
+                <path d="M9 2h6"/>
+              </svg>
+              <strong style="color: #b45309;">සත්‍යාපිත නිල ලේඛනයකි</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Study Material Detail / Preview Modal -->
+  <div class="admin-modal-overlay" id="studentMaterialModal" style="display: none;">
+    <div class="admin-modal-content" style="max-width: 620px;">
+      <div class="admin-modal-header">
+        <h3 id="matModalTitle"><i class="fa-solid fa-book-open"></i> අධ්‍යයන නිබන්ධනය</h3>
+        <button class="admin-modal-close" onclick="closeStudentMaterialModal()">&times;</button>
+      </div>
+      <div id="matModalBody" style="padding: 10px 0;">
+        <!-- Filled dynamically by JS -->
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
+        <button type="button" class="btn-logout" style="background:#e2e8f0; color:#334155;" onclick="closeStudentMaterialModal()">වසන්න (Close)</button>
+        <button type="button" class="btn-save" id="matModalDownloadBtn" onclick="triggerMaterialDownload()">
+          <i class="fa-solid fa-download"></i> බාගත කරන්න (Download PDF)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Badge Certificate / Honors Detail Modal -->
+  <div class="admin-modal-overlay" id="studentBadgeModal" style="display: none;">
+    <div class="admin-modal-content" style="max-width: 640px; border: 2.5px solid var(--accent-yellow); border-radius: 16px; background: #ffffff; padding: 0; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.2);">
+      <div class="admin-modal-header" style="background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); color: white; padding: 16px 20px;">
+        <h3 id="badgeModalHeaderTitle" style="color: white; margin: 0; font-size: 1.1rem;">
+          <i class="fa-solid fa-award" style="color: var(--accent-yellow);"></i> නිල කුසලතා සම්මාන සහතිකය (Certificate of Merit)
+        </h3>
+        <button class="admin-modal-close" style="color: white;" onclick="closeStudentBadgeModal()">&times;</button>
+      </div>
+      <div id="badgeModalBody" style="padding: 24px 20px; text-align: center;">
+        <!-- Filled dynamically by JS -->
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding: 14px 20px; background: #f8fafc;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">
+          <i class="fa-solid fa-shield-halved" style="color: var(--secondary-blue);"></i> ශ්‍රී සුගත ධර්ම විද්‍යාලයීය නිල ලේඛනාගාරය
+        </span>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-modal-cancel" onclick="closeStudentBadgeModal()">වසන්න (Close)</button>
+          <button type="button" class="btn-save" style="padding: 6px 14px; font-size: 0.82rem;" onclick="printStudentBadgeCertificate()">
+            <i class="fa-solid fa-print"></i> මුද්‍රණය (Print Certificate)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script src="../JS/student.js"></script>
+</body>
+</html>
