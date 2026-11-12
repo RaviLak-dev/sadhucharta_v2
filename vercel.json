@@ -45,13 +45,13 @@
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "{B_END/*.js,B_END/models/*.js}"
+      "includeFiles": "B_END/*.js"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index?__vercel_path=$1"
+      "destination": "/api/index.js?__vercel_path=$1"
     }
   ]
 }

@@ -1,8 +1,10 @@
 const path = require('path');
-const dotenv = require('dotenv');
-dotenv.config({ path: path.resolve(__dirname, '.env') });
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-dotenv.config();
+try {
+  const dotenv = require('dotenv');
+  dotenv.config({ path: path.resolve(__dirname, '.env') });
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+  dotenv.config();
+} catch (_) {}
 
 /**
  * Daham Pasala Database Adapter

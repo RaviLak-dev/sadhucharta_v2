@@ -1,9 +1,11 @@
 const path = require('path');
 const fs = require('fs');
-const dotenv = require('dotenv');
-dotenv.config({ path: path.resolve(__dirname, '.env') });
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-dotenv.config();
+try {
+  const dotenv = require('dotenv');
+  dotenv.config({ path: path.resolve(__dirname, '.env') });
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+  dotenv.config();
+} catch (_) {}
 
 const {
   initializeApp,
@@ -15,7 +17,7 @@ const {
 } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const { getAuth } = require('firebase-admin/auth');
-const { SEED_DATA } = require('./seed-mongo');
+const { SEED_DATA } = require('./seed-data');
 const {
   hashPin,
   getFirebaseUid,

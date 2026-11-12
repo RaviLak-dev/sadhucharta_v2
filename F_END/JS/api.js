@@ -244,7 +244,12 @@
         badge.style.background = '#fff8e1';
         badge.style.color = '#b78103';
         badge.style.border = '1px solid #ffe082';
-        badge.innerHTML = `<i class="fa-solid fa-hard-drive" style="color:#f57f17"></i> Local Browser Mode`;
+        const shortErr = backendConnectionError
+          ? (String(backendConnectionError).includes('HTTP ')
+            ? String(backendConnectionError)
+            : 'Offline')
+          : '';
+        badge.innerHTML = `<i class="fa-solid fa-hard-drive" style="color:#f57f17"></i> Local Browser Mode${shortErr ? ` (${shortErr})` : ''}`;
       }
     },
 
