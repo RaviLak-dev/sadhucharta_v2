@@ -90,6 +90,22 @@
 
   let coldRetryScheduled = false;
 
+  function shouldCallBackend() {
+    if (isBackendOnline) return true;
+    return typeof window === 'undefined' || !window.location || window.location.protocol !== 'file:';
+  }
+
+  function markBackendOnline() {
+    if (!isBackendOnline) {
+      isBackendOnline = true;
+      hasCheckedStatus = true;
+      DahamPasalaAPI.renderStatusBadge();
+      if (backendDbType === 'local') {
+        setTimeout(() => DahamPasalaAPI.checkHealth(), 50);
+      }
+    }
+  }
+
   const DahamPasalaAPI = {
     get isOnline() {
       return isBackendOnline;
@@ -269,7 +285,7 @@
 
     // 1. Authentication
     async login(role, username, pin) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/auth/login`, {
             method: 'POST',
@@ -278,6 +294,7 @@
           });
           const result = await res.json();
           if (result && result.success && result.user) {
+            markBackendOnline();
             if (result.token) {
               localStorage.setItem('dahamPasalaToken', result.token);
             }
@@ -379,10 +396,11 @@
 
     // 2. Students CRUD
     async getStudents() {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/students`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               setLocal(StorageKeys.STUDENTS, json.data);
@@ -397,10 +415,11 @@
     },
 
     async getStudent(regNo) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/students/${encodeURIComponent(regNo)}`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               return json.data;
@@ -499,7 +518,7 @@
         setLocal(StorageKeys.STUDENTS, local);
       }
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/students/${encodeURIComponent(regNo)}/exams`, {
             method: 'POST',
@@ -507,6 +526,7 @@
             body: JSON.stringify(examData)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data;
           }
@@ -528,11 +548,12 @@
         setLocal(StorageKeys.STUDENTS, local);
       }
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
-          await fetchWithTimeout(`${API_BASE}/students/${encodeURIComponent(regNo)}/exams?term=${encodeURIComponent(term)}&subject=${encodeURIComponent(subject)}&year=${encodeURIComponent(year)}`, {
+          const res = await fetchWithTimeout(`${API_BASE}/students/${encodeURIComponent(regNo)}/exams?term=${encodeURIComponent(term)}&subject=${encodeURIComponent(subject)}&year=${encodeURIComponent(year)}`, {
             method: 'DELETE'
           });
+          if (res.ok) markBackendOnline();
         } catch (e) {
           console.warn('API deleteStudentExamMark failed:', e);
         }
@@ -541,10 +562,11 @@
     },
 
     async getGradeRankings(grade, year = '2026') {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/grades/${encodeURIComponent(grade)}/rankings?year=${encodeURIComponent(year)}`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               return json.data;
@@ -575,13 +597,14 @@
 
     // Bulk Data Import & Export Methods
     async bulkImportStudents(studentsList) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/students/bulk-import`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ students: studentsList })
           }, 10000);
+          if (res.ok) markBackendOnline();
           return await res.json();
         } catch (e) {
           console.warn('API bulkImportStudents failed:', e);
@@ -592,13 +615,14 @@
     },
 
     async bulkImportExamMarks(marksList) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/exams/bulk-import`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ marks: marksList })
           }, 10000);
+          if (res.ok) markBackendOnline();
           return await res.json();
         } catch (e) {
           console.warn('API bulkImportExamMarks failed:', e);
@@ -626,10 +650,11 @@
 
     // 3. Teachers CRUD
     async getTeachers() {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/teachers`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               setLocal(StorageKeys.TEACHERS, json.data);
@@ -702,11 +727,12 @@
 
     // 4. Attendance
     async getAttendance(query = {}) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const params = new URLSearchParams(query).toString();
           const res = await fetchWithTimeout(`${API_BASE}/attendance${params ? '?' + params : ''}`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data;
           }
@@ -742,7 +768,7 @@
         setLocal(StorageKeys.STUDENTS, students);
       }
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/attendance`, {
             method: 'POST',
@@ -750,6 +776,7 @@
             body: JSON.stringify(attendanceData)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -762,11 +789,12 @@
 
     // 5. Deeds
     async getDeeds(regNo = null) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const url = regNo ? `${API_BASE}/deeds?regNo=${encodeURIComponent(regNo)}` : `${API_BASE}/deeds`;
           const res = await fetchWithTimeout(url);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               if (!regNo) setLocal(StorageKeys.DEEDS, json.data);
@@ -787,7 +815,7 @@
       local.unshift(entry);
       setLocal(StorageKeys.DEEDS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/deeds`, {
             method: 'POST',
@@ -795,6 +823,7 @@
             body: JSON.stringify(deed)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -807,13 +836,14 @@
 
     // 6. Badges
     async getBadges(regNo = null, status = null) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const params = new URLSearchParams();
           if (regNo) params.set('regNo', regNo);
           if (status) params.set('status', status);
           const res = await fetchWithTimeout(`${API_BASE}/badges${params.toString() ? '?' + params.toString() : ''}`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               if (!regNo && !status) setLocal(StorageKeys.BADGES, json.data);
@@ -836,7 +866,7 @@
       local.unshift(entry);
       setLocal(StorageKeys.BADGES, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/badges/nominate`, {
             method: 'POST',
@@ -844,6 +874,7 @@
             body: JSON.stringify(badge)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -862,7 +893,7 @@
         setLocal(StorageKeys.BADGES, local);
       }
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/badges/${encodeURIComponent(id)}/status`, {
             method: 'PUT',
@@ -870,6 +901,7 @@
             body: JSON.stringify({ status })
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || badge;
           }
@@ -890,7 +922,7 @@
         setLocal(StorageKeys.BADGES, local);
       }
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/badges/${encodeURIComponent(id)}`, {
             method: 'PUT',
@@ -898,6 +930,7 @@
             body: JSON.stringify(updateData)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || updatedBadge;
           }
@@ -913,12 +946,13 @@
       const filtered = local.filter(b => b.id !== id);
       setLocal(StorageKeys.BADGES, filtered);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/badges/${encodeURIComponent(id)}`, {
             method: 'DELETE'
           });
           if (res.ok) {
+            markBackendOnline();
             return true;
           }
         } catch (e) {
@@ -930,11 +964,12 @@
 
     // 7. Observations
     async getObservations(regNo = null) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const url = regNo ? `${API_BASE}/observations?regNo=${encodeURIComponent(regNo)}` : `${API_BASE}/observations`;
           const res = await fetchWithTimeout(url);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               return json.data;
@@ -954,7 +989,7 @@
       local.unshift(entry);
       setLocal(StorageKeys.OBSERVATIONS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/observations`, {
             method: 'POST',
@@ -962,6 +997,7 @@
             body: JSON.stringify(obs)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -974,10 +1010,11 @@
 
     // 8. Events
     async getEvents() {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/events`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               setLocal(StorageKeys.EVENTS, json.data);
@@ -1007,7 +1044,7 @@
       else local.push(enriched);
       setLocal(StorageKeys.EVENTS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/events`, {
             method: 'POST',
@@ -1015,6 +1052,7 @@
             body: JSON.stringify(enriched)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || enriched;
           }
@@ -1030,11 +1068,12 @@
       local = local.filter(e => e.id !== id);
       setLocal(StorageKeys.EVENTS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
-          await fetchWithTimeout(`${API_BASE}/events/${encodeURIComponent(id)}`, {
+          const res = await fetchWithTimeout(`${API_BASE}/events/${encodeURIComponent(id)}`, {
             method: 'DELETE'
           });
+          if (res.ok) markBackendOnline();
         } catch (e) {
           console.warn('API deleteEvent failed:', e);
         }
@@ -1067,11 +1106,12 @@
     },
 
     async getAnnouncements(audience = null) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const url = audience ? `${API_BASE}/announcements?audience=${encodeURIComponent(audience)}` : `${API_BASE}/announcements`;
           const res = await fetchWithTimeout(url);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               if (!audience) setLocal(StorageKeys.ANNOUNCEMENTS, json.data);
@@ -1095,7 +1135,7 @@
       local.unshift(entry);
       setLocal(StorageKeys.ANNOUNCEMENTS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/announcements`, {
             method: 'POST',
@@ -1103,6 +1143,7 @@
             body: JSON.stringify(ann)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -1118,11 +1159,12 @@
       local = local.filter(a => a.id !== id);
       setLocal(StorageKeys.ANNOUNCEMENTS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
-          await fetchWithTimeout(`${API_BASE}/announcements/${encodeURIComponent(id)}`, {
+          const res = await fetchWithTimeout(`${API_BASE}/announcements/${encodeURIComponent(id)}`, {
             method: 'DELETE'
           });
+          if (res.ok) markBackendOnline();
         } catch (e) {
           console.warn('API deleteAnnouncement failed:', e);
         }
@@ -1132,11 +1174,12 @@
 
     // 10. Study Materials
     async getMaterials(grade = null) {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const url = grade ? `${API_BASE}/materials?grade=${encodeURIComponent(grade)}` : `${API_BASE}/materials`;
           const res = await fetchWithTimeout(url);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) {
               if (!grade) setLocal(StorageKeys.MATERIALS, json.data);
@@ -1160,7 +1203,7 @@
       local.unshift(entry);
       setLocal(StorageKeys.MATERIALS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/materials`, {
             method: 'POST',
@@ -1168,6 +1211,7 @@
             body: JSON.stringify(mat)
           });
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             return json.data || entry;
           }
@@ -1183,11 +1227,12 @@
       local = local.filter(m => m.id !== id);
       setLocal(StorageKeys.MATERIALS, local);
 
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
-          await fetchWithTimeout(`${API_BASE}/materials/${encodeURIComponent(id)}`, {
+          const res = await fetchWithTimeout(`${API_BASE}/materials/${encodeURIComponent(id)}`, {
             method: 'DELETE'
           });
+          if (res.ok) markBackendOnline();
         } catch (e) {
           console.warn('API deleteMaterial failed:', e);
         }
@@ -1197,10 +1242,11 @@
 
     // 11. Analytics
     async getAnalytics() {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/analytics`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) return json.data;
           }
@@ -1250,10 +1296,11 @@
 
     // 12. Reports
     async getReports(type = 'attendance', grade = 'all') {
-      if (isBackendOnline) {
+      if (shouldCallBackend()) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/reports?type=${encodeURIComponent(type)}&grade=${encodeURIComponent(grade)}`);
           if (res.ok) {
+            markBackendOnline();
             const json = await res.json();
             if (json.success && json.data) return json.data;
           }

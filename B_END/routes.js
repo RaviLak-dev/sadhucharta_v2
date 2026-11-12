@@ -781,7 +781,8 @@ async function handleRoutes(req, res, body) {
 
     if (type === 'teachers') {
       const teachers = await db.getAllTeachers();
-      return sendJson(res, 200, { success: true, type: 'teachers', count: teachers.length, data: teachers });
+      const safeTeachers = (teachers || []).map(sanitizePublicUser);
+      return sendJson(res, 200, { success: true, type: 'teachers', count: safeTeachers.length, data: safeTeachers });
     }
 
     return sendJson(res, 400, { success: false, message: `Unknown report type: ${type}` });
