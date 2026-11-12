@@ -70,7 +70,7 @@
   }
 
   // Timeout-wrapped fetch with automatic JWT Authorization header
-  async function fetchWithTimeout(url, options = {}, timeoutMs = 3500) {
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const token = localStorage.getItem('dahamPasalaToken');
@@ -88,6 +88,8 @@
     }
   }
 
+  let coldRetryScheduled = false;
+
   const DahamPasalaAPI = {
     get isOnline() {
       return isBackendOnline;
@@ -98,8 +100,10 @@
 
     // Check backend health & update badge
     async checkHealth() {
+      const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+      const healthTimeout = isFileProto ? 2000 : 10000;
       try {
-        const res = await fetchWithTimeout(`${API_BASE}/health`, { method: 'GET' }, 2000);
+        const res = await fetchWithTimeout(`${API_BASE}/health`, { method: 'GET' }, healthTimeout);
         if (res.ok) {
           const data = await res.json();
           isBackendOnline = (data.status === 'ok');
@@ -114,6 +118,13 @@
       }
       hasCheckedStatus = true;
       DahamPasalaAPI.renderStatusBadge();
+
+      if (!isBackendOnline && !isFileProto && !coldRetryScheduled) {
+        coldRetryScheduled = true;
+        setTimeout(() => {
+          DahamPasalaAPI.checkHealth();
+        }, 2500);
+      }
 
       // Start auto-poll if not started
       if (!healthPollInterval) {

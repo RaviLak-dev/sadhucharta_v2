@@ -72,6 +72,26 @@ function readRequestBody(req) {
   });
 }
 
+function normalizeRequestUrl(req) {
+  const parsed = new URL(req.url || '/api', 'http://localhost');
+  const vercelPath = parsed.searchParams.get('__vercel_path');
+
+  if (vercelPath !== null) {
+    parsed.searchParams.delete('__vercel_path');
+    const cleanSubPath = String(vercelPath).replace(/^\/+/, '');
+    const qs = parsed.searchParams.toString();
+    req.url = `/api${cleanSubPath ? `/${cleanSubPath}` : ''}${qs ? `?${qs}` : ''}`;
+    return;
+  }
+
+  if (parsed.pathname === '/api' || parsed.pathname === '/api/') {
+    const headerUri = req.headers['x-vercel-original-url'] || req.headers['x-forwarded-uri'];
+    if (headerUri && String(headerUri).startsWith('/api/')) {
+      req.url = String(headerUri);
+    }
+  }
+}
+
 module.exports = async (req, res) => {
   setCorsHeaders(res);
 
@@ -81,6 +101,7 @@ module.exports = async (req, res) => {
   }
 
   try {
+    normalizeRequestUrl(req);
     const body = await readRequestBody(req);
     await handleRoutes(req, res, body);
   } catch (err) {

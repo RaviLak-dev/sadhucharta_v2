@@ -374,7 +374,7 @@ async function handleRoutes(req, res, body) {
   }
 
   // GET /api/students/:regNo
-  const studentMatch = pathname.match(/^\/api\/students\/([^/]+)$/);
+  const studentMatch = pathname.match(/^\/api\/students\/(.+)$/);
   if (studentMatch && method === 'GET') {
     const regNo = decodeURIComponent(studentMatch[1]);
     const student = query.basic === 'true'
@@ -523,7 +523,7 @@ async function handleRoutes(req, res, body) {
   }
 
   // PUT /api/badges/:id (Edit Badge Details)
-  const badgeIdMatch = pathname.match(/^\/api\/badges\/([^/]+)$/);
+  const badgeIdMatch = pathname.match(/^\/api\/badges\/(.+)$/);
   if (badgeIdMatch && method === 'PUT') {
     const id = decodeURIComponent(badgeIdMatch[1]);
     const updated = await db.updateBadge(id, body);
