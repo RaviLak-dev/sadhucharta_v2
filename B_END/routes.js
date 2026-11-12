@@ -390,7 +390,13 @@ async function handleRoutes(req, res, body) {
   if (pathname === '/api/students' && method === 'POST') {
     try {
       const student = await db.saveStudent(body);
-      return sendJson(res, 201, { success: true, data: sanitizePublicUser(student) });
+      const persistedTo = (db.isLive && !db.lastWriteError) ? 'firebase' : 'memory_fallback';
+      return sendJson(res, 201, {
+        success: true,
+        persistedTo,
+        databaseError: db.lastWriteError || db.connectionError || null,
+        data: sanitizePublicUser(student)
+      });
     } catch (e) {
       return sendJson(res, 400, { success: false, message: e.message });
     }
@@ -401,7 +407,13 @@ async function handleRoutes(req, res, body) {
     const regNo = decodeURIComponent(studentMatch[1]);
     try {
       const student = await db.saveStudent({ ...body, regNo });
-      return sendJson(res, 200, { success: true, data: sanitizePublicUser(student) });
+      const persistedTo = (db.isLive && !db.lastWriteError) ? 'firebase' : 'memory_fallback';
+      return sendJson(res, 200, {
+        success: true,
+        persistedTo,
+        databaseError: db.lastWriteError || db.connectionError || null,
+        data: sanitizePublicUser(student)
+      });
     } catch (e) {
       return sendJson(res, 400, { success: false, message: e.message });
     }
@@ -427,7 +439,13 @@ async function handleRoutes(req, res, body) {
       return sendJson(res, 400, { success: false, message: 'Teacher ID and Name are required.' });
     }
     const teacher = await db.saveTeacher(body);
-    return sendJson(res, 201, { success: true, data: sanitizePublicUser(teacher) });
+    const persistedTo = (db.isLive && !db.lastWriteError) ? 'firebase' : 'memory_fallback';
+    return sendJson(res, 201, {
+      success: true,
+      persistedTo,
+      databaseError: db.lastWriteError || db.connectionError || null,
+      data: sanitizePublicUser(teacher)
+    });
   }
 
   // PUT /api/teachers/:id

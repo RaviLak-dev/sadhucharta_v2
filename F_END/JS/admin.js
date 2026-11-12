@@ -926,13 +926,14 @@
 
       try {
         let savedRecord = studentPayload;
+        let apiResult = null;
         if (window.DahamPasalaAPI) {
-          const apiResult = await DahamPasalaAPI.saveStudent(studentPayload);
+          apiResult = await DahamPasalaAPI.saveStudent(studentPayload);
           if (apiResult && apiResult._backendError) {
             console.warn("Student backend save warning:", apiResult._backendError);
           }
           if (apiResult) {
-            const { _savedToBackend, _backendError, ...cleanSaved } = apiResult;
+            const { _savedToBackend, _persistedTo, _backendError, ...cleanSaved } = apiResult;
             savedRecord = { ...studentPayload, ...cleanSaved };
           }
         }
@@ -943,10 +944,14 @@
         renderAdminStudentDirectory();
         closeAddStudentModal();
 
-        if (isEditing) {
-          alert(`ශිෂ්‍ය ${name} (${regNo}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
+        if (apiResult && !apiResult._savedToBackend) {
+          alert(`⚠️ අවධානයට: ශිෂ්‍ය ${name} (${regNo}) ඔබගේ Browser එකේ පමණක් සුරැකුණි (Firebase වෙත සම්බන්ධ නොවීය).\n\nදෝෂය: ${apiResult._backendError || 'Backend offline'}`);
+        } else if (apiResult && apiResult._persistedTo === 'memory_fallback') {
+          alert(`⚠️ අවධානයට: Vercel/Server හි Firebase සම්බන්ධ වී නොමැති නිසා ශිෂ්‍ය ${name} (${regNo}) Firebase Database එකට ඇතුළත් නොවීය (තාවකාලික Memory හි පමණි).\n\nහේතුව: ${apiResult._backendError || 'FIREBASE_SERVICE_ACCOUNT_JSON missing on server'}`);
+        } else if (isEditing) {
+          alert(`ශිෂ්‍ය ${name} (${regNo}) ගේ තොරතුරු සහ ඡායාරූපය Firebase වෙත සාර්ථකව යාවත්කාලීන විය!`);
         } else {
-          alert(`ශිෂ්‍ය ${name} (${regNo}) සාර්ථකව පද්ධතියට ලියාපදිංචි විය!`);
+          alert(`ශිෂ්‍ය ${name} (${regNo}) සාර්ථකව Firebase පද්ධතියට ලියාපදිංචි විය!`);
         }
       } finally {
         if (submitBtn) {
@@ -1135,13 +1140,14 @@
 
       try {
         let savedRecord = teacherPayload;
+        let apiResult = null;
         if (window.DahamPasalaAPI) {
-          const apiResult = await DahamPasalaAPI.saveTeacher(teacherPayload);
+          apiResult = await DahamPasalaAPI.saveTeacher(teacherPayload);
           if (apiResult && apiResult._backendError) {
             console.warn("Teacher backend save warning:", apiResult._backendError);
           }
           if (apiResult) {
-            const { _savedToBackend, _backendError, ...cleanSaved } = apiResult;
+            const { _savedToBackend, _persistedTo, _backendError, ...cleanSaved } = apiResult;
             savedRecord = { ...teacherPayload, ...cleanSaved };
           }
         }
@@ -1159,10 +1165,14 @@
         renderAdminTeachers();
         closeAddTeacherModal();
 
-        if (isEditing) {
-          alert(`ආචාර්ය ${name} (${id}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
+        if (apiResult && !apiResult._savedToBackend) {
+          alert(`⚠️ අවධානයට: ආචාර්ය ${name} (${id}) ඔබගේ Browser එකේ පමණක් සුරැකුණි (Firebase වෙත සම්බන්ධ නොවීය).\n\nදෝෂය: ${apiResult._backendError || 'Backend offline'}`);
+        } else if (apiResult && apiResult._persistedTo === 'memory_fallback') {
+          alert(`⚠️ අවධානයට: Vercel/Server හි Firebase සම්බන්ධ වී නොමැති නිසා ආචාර්ය ${name} (${id}) Firebase Database එකට ඇතුළත් නොවීය (තාවකාලික Memory හි පමණි).\n\nහේතුව: ${apiResult._backendError || 'FIREBASE_SERVICE_ACCOUNT_JSON missing on server'}`);
+        } else if (isEditing) {
+          alert(`ආචාර්ය ${name} (${id}) ගේ තොරතුරු සහ ඡායාරූපය Firebase වෙත සාර්ථකව යාවත්කාලීන විය!`);
         } else {
-          alert(`ආචාර්ය ${name} (${id}) සාර්ථකව පත් කරන ලදී!`);
+          alert(`ආචාර්ය ${name} (${id}) සාර්ථකව Firebase පද්ධතියට පත් කරන ලදී!`);
         }
       } finally {
         if (submitBtn) {

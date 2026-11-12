@@ -38,6 +38,7 @@ class FirebaseDatabase {
     this.isConnected = false;
     this.isConnecting = false;
     this.connectionError = null;
+    this.lastWriteError = null;
     this.app = null;
     this.firestore = null;
     this.auth = null;
@@ -115,6 +116,13 @@ class FirebaseDatabase {
       } catch (e) {
         trimmed = trimmed.slice(1, -1).trim();
       }
+    }
+    // Support optional base64-encoded service account JSON (useful in strict env var UIs)
+    if (trimmed && !trimmed.startsWith('{') && /^[A-Za-z0-9+/=\s]+$/.test(trimmed)) {
+      try {
+        const decoded = Buffer.from(trimmed.replace(/\s+/g, ''), 'base64').toString('utf8').trim();
+        if (decoded.startsWith('{')) trimmed = decoded;
+      } catch (_) {}
     }
     const parsed = JSON.parse(trimmed);
     if (parsed && typeof parsed.private_key === 'string') {
@@ -260,14 +268,16 @@ class FirebaseDatabase {
       this.auth = getAuth(this.app);
 
       // Verify connectivity with a fast read
-      await this.firestore.collection('students').limit(1).get();
+      const pingSnap = await this.firestore.collection('students').limit(1).get();
 
       this.isConnected = true;
       this.isConnecting = false;
       this.connectionError = null;
       console.log(`✅ Connected to Firebase Cloud Firestore & Auth (${this.projectId}, mode: ${this.credentialMode})`);
 
-      await this.seedIfEmpty();
+      if (pingSnap.empty) {
+        await this.seedIfEmpty();
+      }
       return true;
     } catch (err) {
       this.isConnected = false;
@@ -520,6 +530,7 @@ class FirebaseDatabase {
     if (idx >= 0) this.memStore.students[idx] = mergedMem;
     else this.memStore.students.push(mergedMem);
 
+    this.lastWriteError = null;
     if (this.isLive) {
       try {
         const docId = FirebaseDatabase.toDocId(regNo);
@@ -537,6 +548,7 @@ class FirebaseDatabase {
         }
         return publicDoc;
       } catch (err) {
+        this.lastWriteError = err.message || String(err);
         console.warn('Firestore saveStudent failed, saved to memory store:', err.message);
       }
     }
@@ -864,6 +876,7 @@ class FirebaseDatabase {
     if (idx >= 0) this.memStore.teachers[idx] = mergedMem;
     else this.memStore.teachers.push(mergedMem);
 
+    this.lastWriteError = null;
     if (this.isLive) {
       try {
         const docId = FirebaseDatabase.toDocId(id);
@@ -881,6 +894,7 @@ class FirebaseDatabase {
         }
         return publicDoc;
       } catch (err) {
+        this.lastWriteError = err.message || String(err);
         console.warn('Firestore saveTeacher failed, saved to memory store:', err.message);
       }
     }

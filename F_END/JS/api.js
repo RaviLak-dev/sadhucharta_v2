@@ -33,6 +33,7 @@
   const API_BASE = getApiBase();
   let isBackendOnline = false;
   let backendDbType = 'local';
+  let backendConnectionError = null;
   let hasCheckedStatus = false;
   let healthPollInterval = null;
 
@@ -70,7 +71,7 @@
   }
 
   // Timeout-wrapped fetch with automatic JWT Authorization header
-  async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     const token = localStorage.getItem('dahamPasalaToken');
@@ -117,20 +118,23 @@
     // Check backend health & update badge
     async checkHealth() {
       const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
-      const healthTimeout = isFileProto ? 2000 : 10000;
+      const healthTimeout = isFileProto ? 2000 : 15000;
       try {
         const res = await fetchWithTimeout(`${API_BASE}/health`, { method: 'GET' }, healthTimeout);
         if (res.ok) {
           const data = await res.json();
           isBackendOnline = (data.status === 'ok');
           backendDbType = data.database || 'json_file_fallback';
+          backendConnectionError = data.databaseError || null;
         } else {
           isBackendOnline = false;
           backendDbType = 'local';
+          backendConnectionError = `HTTP ${res.status}`;
         }
       } catch (e) {
         isBackendOnline = false;
         backendDbType = 'local';
+        backendConnectionError = e.message;
       }
       hasCheckedStatus = true;
       DahamPasalaAPI.renderStatusBadge();
@@ -202,7 +206,9 @@
           await DahamPasalaAPI.checkHealth();
           const dbLabel = backendDbType === 'firebase'
             ? 'Firebase Firestore & Auth සක්‍රීයයි'
-            : (backendDbType === 'mongodb' ? 'MongoDB දත්ත සමුදාය සක්‍රීයයි' : 'දේශීය Fallback ගබඩාව සක්‍රීයයි');
+            : (backendDbType === 'mongodb'
+              ? 'MongoDB දත්ත සමුදාය සක්‍රීයයි'
+              : `Firebase සම්බන්ධ නොවී Memory Fallback භාවිතා වේ${backendConnectionError ? ' (' + backendConnectionError + ')' : ''}`);
           DahamPasalaAPI.showToast(isBackendOnline ? `✅ Backend සම්බන්ධයි: ${dbLabel}` : "ℹ️ Backend නොබැඳි මාදිලියේ ඇත (Browser Local Mode)");
         });
 
@@ -228,10 +234,10 @@
           badge.style.border = '1px solid #a5d6a7';
           badge.innerHTML = `<i class="fa-solid fa-leaf" style="color:#2e7d32"></i> Backend: MongoDB (Live)`;
         } else {
-          badge.style.background = '#e3f2fd';
-          badge.style.color = '#1565c0';
-          badge.style.border = '1px solid #90caf9';
-          badge.innerHTML = `<i class="fa-solid fa-database" style="color:#1976d2"></i> Backend: Memory DB (Fallback)`;
+          badge.style.background = '#fef2f2';
+          badge.style.color = '#b91c1c';
+          badge.style.border = '1px solid #fecaca';
+          badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:#dc2626"></i> Backend: Memory Only (No Firebase)`;
         }
       } else {
         badge.style.background = '#fff8e1';
@@ -447,15 +453,27 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(studentData)
-          });
+          }, 20000);
           const json = await res.json().catch(() => ({}));
           if (res.ok) {
             isBackendOnline = true;
+            if (json.persistedTo === 'firebase') {
+              backendDbType = 'firebase';
+              backendConnectionError = null;
+            } else if (json.persistedTo === 'memory_fallback') {
+              backendDbType = 'disconnected';
+              backendConnectionError = json.databaseError || 'Firebase not connected on server';
+            }
             DahamPasalaAPI.renderStatusBadge();
             const saved = json.data || studentData;
             local[regNo] = { ...(local[regNo] || {}), ...saved };
             setLocal(StorageKeys.STUDENTS, local);
-            return { ...saved, _savedToBackend: true };
+            return {
+              ...saved,
+              _savedToBackend: true,
+              _persistedTo: json.persistedTo || backendDbType,
+              _backendError: json.persistedTo === 'memory_fallback' ? (json.databaseError || 'Firebase not connected on server') : null
+            };
           }
           return { ...local[regNo], _savedToBackend: false, _backendError: json.message || json.error || `HTTP ${res.status}` };
         } catch (e) {
@@ -685,10 +703,17 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(teacherData)
-          });
+          }, 20000);
           const json = await res.json().catch(() => ({}));
           if (res.ok) {
             isBackendOnline = true;
+            if (json.persistedTo === 'firebase') {
+              backendDbType = 'firebase';
+              backendConnectionError = null;
+            } else if (json.persistedTo === 'memory_fallback') {
+              backendDbType = 'disconnected';
+              backendConnectionError = json.databaseError || 'Firebase not connected on server';
+            }
             DahamPasalaAPI.renderStatusBadge();
             const saved = json.data || teacherData;
             const latestLocal = getLocal(StorageKeys.TEACHERS, []);
@@ -696,7 +721,12 @@
             if (sIdx >= 0) latestLocal[sIdx] = { ...latestLocal[sIdx], ...saved };
             else latestLocal.push(saved);
             setLocal(StorageKeys.TEACHERS, latestLocal);
-            return { ...saved, _savedToBackend: true };
+            return {
+              ...saved,
+              _savedToBackend: true,
+              _persistedTo: json.persistedTo || backendDbType,
+              _backendError: json.persistedTo === 'memory_fallback' ? (json.databaseError || 'Firebase not connected on server') : null
+            };
           }
           return { ...teacherData, _savedToBackend: false, _backendError: json.message || json.error || `HTTP ${res.status}` };
         } catch (e) {
