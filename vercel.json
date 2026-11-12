@@ -1,0 +1,52 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/index.html",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/Onboarding",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/OnBordingPage.html",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/F_END",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/F_END/index.html",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/Pages",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    },
+    {
+      "source": "/Pages/index.html",
+      "destination": "/F_END/Pages/OnboardingPage.html",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    }
+  ]
+}

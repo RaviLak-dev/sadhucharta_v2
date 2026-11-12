@@ -106,12 +106,29 @@ class FirebaseDatabase {
     };
   }
 
+  static parseServiceAccountJson(raw) {
+    let trimmed = String(raw || '').trim();
+    if ((trimmed.startsWith("'") && trimmed.endsWith("'")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+      try {
+        const unquoted = JSON.parse(trimmed);
+        if (typeof unquoted === 'string') trimmed = unquoted.trim();
+      } catch (e) {
+        trimmed = trimmed.slice(1, -1).trim();
+      }
+    }
+    const parsed = JSON.parse(trimmed);
+    if (parsed && typeof parsed.private_key === 'string') {
+      parsed.private_key = parsed.private_key.replace(/\\n/g, '\n');
+    }
+    return parsed;
+  }
+
   /**
    * Locate Firebase service account credentials from env vars or local JSON key files.
    */
   resolveFirebaseCredentials() {
     if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-      const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      const parsed = FirebaseDatabase.parseServiceAccountJson(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
       return {
         mode: 'env_json',
         projectId: parsed.project_id || DEFAULT_PROJECT_ID,
@@ -135,13 +152,15 @@ class FirebaseDatabase {
     }
 
     if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      const cleanEmail = String(process.env.FIREBASE_CLIENT_EMAIL).trim().replace(/^["']|["']$/g, '');
+      const cleanKey = String(process.env.FIREBASE_PRIVATE_KEY).trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
       return {
         mode: 'env_fields',
         projectId: DEFAULT_PROJECT_ID,
         credential: cert({
           projectId: DEFAULT_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+          clientEmail: cleanEmail,
+          privateKey: cleanKey
         })
       };
     }
@@ -230,7 +249,11 @@ class FirebaseDatabase {
         : getFirestore(this.app);
 
       try {
-        this.firestore.settings({ ignoreUndefinedProperties: true });
+        const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+        this.firestore.settings({
+          ignoreUndefinedProperties: true,
+          ...(isServerless ? { preferRest: true } : {})
+        });
       } catch (e) {
         // settings() may already have been applied on hot reload
       }
@@ -251,7 +274,9 @@ class FirebaseDatabase {
       this.isConnecting = false;
       this.connectionError = err.message || String(err);
       console.warn(`⚠️ Firebase connection unavailable (${this.connectionError}). Seamlessly using in-memory store.`);
-      this.scheduleRetry();
+      if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+        this.scheduleRetry();
+      }
       return false;
     }
   }
@@ -290,7 +315,7 @@ class FirebaseDatabase {
   /**
    * Wait briefly for initial async connection if a route executes immediately at startup.
    */
-  async ensureReady(maxWaitMs = 2000) {
+  async ensureReady(maxWaitMs = (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME ? 8000 : 2000)) {
     if (this.isLive || !this.initPromise) return;
     await Promise.race([
       this.initPromise.catch(() => {}),

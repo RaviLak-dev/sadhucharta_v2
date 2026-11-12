@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+B_END/.env
+B_END/.env.*
+*firebase-adminsdk*.json
+firebase-service-account*.json
+serviceAccountKey.json
+B_END/*firebase-adminsdk*.json
+B_END/serviceAccountKey.json
+node_modules
+B_END/node_modules
+.firebase
+*.log
+.DS_Store

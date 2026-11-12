@@ -144,6 +144,9 @@ async function handleRoutes(req, res, body) {
 
   // 1.1 DB Status & Reconnect
   if (pathname === '/api/db/status' && method === 'GET') {
+    if (typeof db.ensureReady === 'function') {
+      await db.ensureReady();
+    }
     const uri = process.env.MONGODB_URI || '';
     const activeProvider = db.provider || 'mongodb';
     return sendJson(res, 200, {
@@ -211,6 +214,9 @@ async function handleRoutes(req, res, body) {
 
   // 2.1 Auth Session Verification (Firebase ID Token or Fallback JWT)
   if (pathname === '/api/auth/verify' && method === 'GET') {
+    if (typeof db.ensureReady === 'function') {
+      await db.ensureReady();
+    }
     const authUser = await extractAuthUserAsync(req, db.firebaseAuth || null);
     if (!authUser) {
       return sendJson(res, 401, { success: false, message: 'Invalid or expired authentication token.' });
