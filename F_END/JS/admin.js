@@ -244,12 +244,21 @@
     }
 
     function persistAllAdminData() {
-      localStorage.setItem("dahamPasalaStudentDb", JSON.stringify(studentDb));
-      localStorage.setItem("dahamPasalaTeachers", JSON.stringify(teachersDb));
-      localStorage.setItem("dahamPasalaEvents", JSON.stringify(eventsDb));
-      localStorage.setItem("dahamPasalaGoodDeeds", JSON.stringify(goodDeedsStore));
-      localStorage.setItem("dahamPasalaAwardedBadges", JSON.stringify(badgesStore));
-      localStorage.setItem("dahamPasalaAnnouncements", JSON.stringify(announcementsDb));
+      const writes = [
+        ["dahamPasalaStudentDb", studentDb],
+        ["dahamPasalaTeachers", teachersDb],
+        ["dahamPasalaEvents", eventsDb],
+        ["dahamPasalaGoodDeeds", goodDeedsStore],
+        ["dahamPasalaAwardedBadges", badgesStore],
+        ["dahamPasalaAnnouncements", announcementsDb]
+      ];
+      writes.forEach(([key, val]) => {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (err) {
+          console.warn(`localStorage persist warning (${key}):`, err && err.message ? err.message : err);
+        }
+      });
     }
 
     // Quick Fill Demo Login
@@ -571,7 +580,6 @@
       const filtered = studentKeys.filter(k => {
         const s = studentDb[k];
         if (!s) return false;
-        if (gradeFilter !== "all" && !((s.grade || "").toLowerCase().includes(gradeFilter))) return false;
         if (!matchesGradeFilter(s.grade, gradeFilter)) return false;
         if (query) {
           const name = (s.name || "").toLowerCase();
@@ -688,11 +696,11 @@
       document.getElementById("studentDossierModal").style.display = "none";
     }
 
-    function deleteStudent(regNo) {
+    async function deleteStudent(regNo) {
       if (confirm(`ඔබට විශ්වාසද ${regNo} ශිෂ්‍යයා පද්ධතියෙන් ඉවත් කිරීමට අවශ්‍ය බව?`)) {
         delete studentDb[regNo];
         if (window.DahamPasalaAPI) {
-          DahamPasalaAPI.deleteStudent(regNo);
+          await DahamPasalaAPI.deleteStudent(regNo);
         }
         persistAllAdminData();
         renderAdminDashboard();
@@ -700,9 +708,11 @@
       }
     }
 
-    // Photo Upload & Preview Helpers
-    function handleStudentPhotoSelect(event) {
-      const file = event.target.files && event.target.files[0];
+    /**
+     * Resize and compress profile photos on the client so avatars stay fast and well under
+     * browser localStorage, Vercel 4.5MB, and Firestore 1MB document limits.
+     */
+    function readAndCompressProfilePhoto(file, previewId, hiddenInputId, maxDim = 280) {
       if (!file) return;
       if (!file.type.startsWith("image/")) {
         alert("කරුණාකර වලංගු ඡායාරූප ගොනුවක් (JPG/PNG) තෝරන්න.");
@@ -710,11 +720,37 @@
       }
       const reader = new FileReader();
       reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        document.getElementById("newStudentPhotoPreview").src = dataUrl;
-        document.getElementById("newStudentPhotoData").value = dataUrl;
+        const rawUrl = e.target.result;
+        const img = new Image();
+        img.onload = function() {
+          try {
+            const scale = Math.min(1, maxDim / Math.max(img.width || maxDim, img.height || maxDim));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressedUrl = canvas.toDataURL("image/jpeg", 0.82);
+            document.getElementById(previewId).src = compressedUrl;
+            document.getElementById(hiddenInputId).value = compressedUrl;
+          } catch (_) {
+            document.getElementById(previewId).src = rawUrl;
+            document.getElementById(hiddenInputId).value = rawUrl;
+          }
+        };
+        img.onerror = function() {
+          document.getElementById(previewId).src = rawUrl;
+          document.getElementById(hiddenInputId).value = rawUrl;
+        };
+        img.src = rawUrl;
       };
       reader.readAsDataURL(file);
+    }
+
+    // Photo Upload & Preview Helpers
+    function handleStudentPhotoSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      readAndCompressProfilePhoto(file, "newStudentPhotoPreview", "newStudentPhotoData");
     }
 
     function resetStudentPhotoToDefault() {
@@ -726,18 +762,7 @@
 
     function handleTeacherPhotoSelect(event) {
       const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      if (!file.type.startsWith("image/")) {
-        alert("කරුණාකර වලංගු ඡායාරූප ගොනුවක් (JPG/PNG) තෝරන්න.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        document.getElementById("newTeacherPhotoPreview").src = dataUrl;
-        document.getElementById("newTeacherPhotoData").value = dataUrl;
-      };
-      reader.readAsDataURL(file);
+      readAndCompressProfilePhoto(file, "newTeacherPhotoPreview", "newTeacherPhotoData");
     }
 
     function resetTeacherPhotoToDefault() {
@@ -745,6 +770,42 @@
       document.getElementById("newTeacherPhotoData").value = DEFAULT_TEACHER_PHOTO;
       const fileInput = document.getElementById("newTeacherPhotoFile");
       if (fileInput) fileInput.value = "";
+    }
+
+    function getNextStudentRegNo() {
+      let maxNum = 100;
+      Object.keys(studentDb).forEach((k) => {
+        const m = String(k).match(/(\d+)$/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxNum) maxNum = n;
+        }
+      });
+      let candidate = `DPS/2026/${maxNum + 1}`;
+      while (studentDb[candidate]) {
+        maxNum++;
+        candidate = `DPS/2026/${maxNum + 1}`;
+      }
+      return candidate;
+    }
+
+    function getNextTeacherId() {
+      const existingIds = new Set(teachersDb.map(t => t && t.id).filter(Boolean));
+      let maxNum = 0;
+      existingIds.forEach((id) => {
+        const m = String(id).match(/(\d+)$/);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (!isNaN(n) && n > maxNum) maxNum = n;
+        }
+      });
+      let next = maxNum + 1;
+      let candidate = `TCH/2026/${String(next).padStart(2, '0')}`;
+      while (existingIds.has(candidate)) {
+        next++;
+        candidate = `TCH/2026/${String(next).padStart(2, '0')}`;
+      }
+      return candidate;
     }
 
     // Modal Handlers: Add / Edit Student
@@ -760,15 +821,15 @@
       const regInput = document.getElementById("newStudentRegNo");
       regInput.readOnly = false;
       regInput.style.backgroundColor = "";
-      
-      const keys = Object.keys(studentDb);
-      const nextNum = 100 + keys.length + 1;
-      regInput.value = `DPS/2026/${nextNum}`;
+      regInput.value = getNextStudentRegNo();
+
       document.getElementById("newStudentGrade").value = "10 ශ්‍රේණිය (Grade 10)";
       document.getElementById("newStudentName").value = "";
       document.getElementById("newStudentEnglishName").value = "";
       document.getElementById("newStudentDob").value = "2011-05-15";
-      document.getElementById("newStudentPin").value = "1234";
+      const pinInput = document.getElementById("newStudentPin");
+      pinInput.value = "1234";
+      pinInput.placeholder = "1234";
       document.getElementById("newStudentGuardian").value = "";
       document.getElementById("newStudentContact").value = "";
       document.getElementById("newStudentAddress").value = "";
@@ -797,7 +858,9 @@
       document.getElementById("newStudentName").value = s.name || "";
       document.getElementById("newStudentEnglishName").value = s.englishName || "";
       document.getElementById("newStudentDob").value = s.dob || "";
-      document.getElementById("newStudentPin").value = s.pin || "1234";
+      const pinInput = document.getElementById("newStudentPin");
+      pinInput.value = "";
+      pinInput.placeholder = "වෙනස් නොකරන්නේ නම් හිස්ව තබන්න";
       document.getElementById("newStudentGuardian").value = s.guardianName || "";
       document.getElementById("newStudentContact").value = s.contact || "";
       document.getElementById("newStudentAddress").value = s.address || "";
@@ -809,23 +872,29 @@
       editingStudentRegNo = null;
     }
 
-    function handleSaveNewStudent(event) {
+    async function handleSaveNewStudent(event) {
       event.preventDefault();
       const regNo = document.getElementById("newStudentRegNo").value.trim();
       const grade = document.getElementById("newStudentGrade").value;
       const name = document.getElementById("newStudentName").value.trim();
       const engName = document.getElementById("newStudentEnglishName").value.trim();
       const dob = document.getElementById("newStudentDob").value;
-      const pin = document.getElementById("newStudentPin").value.trim() || "1234";
+      const rawPin = document.getElementById("newStudentPin").value.trim();
       const guardian = document.getElementById("newStudentGuardian").value.trim();
       const contact = document.getElementById("newStudentContact").value.trim();
       const address = document.getElementById("newStudentAddress").value.trim();
       const photo = document.getElementById("newStudentPhotoData").value || DEFAULT_STUDENT_PHOTO;
 
+      if (!regNo || !name) {
+        alert("කරුණාකර ඇතුළත්වීමේ අංකය සහ ශිෂ්‍යයාගේ නම ඇතුළත් කරන්න.");
+        return;
+      }
+
       const existing = studentDb[regNo] || {};
       const isEditing = Boolean(editingStudentRegNo);
+      const pinToSave = isEditing ? (rawPin || undefined) : (rawPin || "1234");
 
-      studentDb[regNo] = {
+      const studentPayload = {
         ...existing,
         regNo: regNo,
         grade: grade,
@@ -833,7 +902,6 @@
         englishName: engName,
         photo: photo,
         dob: dob,
-        pin: pin,
         guardianName: guardian,
         contact: contact,
         address: address,
@@ -843,20 +911,48 @@
         examMarks: existing.examMarks || [],
         recommendation: existing.recommendation || "අලුතින් ලියාපදිංචි වූ ආදර්ශවත් ශිෂ්‍යයෙකි."
       };
-
-      if (window.DahamPasalaAPI) {
-        DahamPasalaAPI.saveStudent(studentDb[regNo]);
+      if (pinToSave !== undefined) {
+        studentPayload.pin = pinToSave;
+      } else {
+        delete studentPayload.pin;
       }
 
-      persistAllAdminData();
-      renderAdminDashboard();
-      renderAdminStudentDirectory();
-      closeAddStudentModal();
-      
-      if (isEditing) {
-        alert(`ශිෂ්‍ය ${name} (${regNo}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
-      } else {
-        alert(`ශිෂ්‍ය ${name} (${regNo}) සාර්ථකව පද්ධතියට ලියාපදිංචි විය!`);
+      const submitBtn = document.getElementById("saveStudentSubmitBtn");
+      const prevBtnHtml = submitBtn ? submitBtn.innerHTML : "";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> සුරකිමින්...';
+      }
+
+      try {
+        let savedRecord = studentPayload;
+        if (window.DahamPasalaAPI) {
+          const apiResult = await DahamPasalaAPI.saveStudent(studentPayload);
+          if (apiResult && apiResult._backendError) {
+            console.warn("Student backend save warning:", apiResult._backendError);
+          }
+          if (apiResult) {
+            const { _savedToBackend, _backendError, ...cleanSaved } = apiResult;
+            savedRecord = { ...studentPayload, ...cleanSaved };
+          }
+        }
+
+        studentDb[regNo] = savedRecord;
+        persistAllAdminData();
+        renderAdminDashboard();
+        renderAdminStudentDirectory();
+        closeAddStudentModal();
+
+        if (isEditing) {
+          alert(`ශිෂ්‍ය ${name} (${regNo}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
+        } else {
+          alert(`ශිෂ්‍ය ${name} (${regNo}) සාර්ථකව පද්ධතියට ලියාපදිංචි විය!`);
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = prevBtnHtml;
+        }
       }
     }
 
@@ -914,7 +1010,7 @@
       document.getElementById("assignClassModal").style.display = "none";
     }
 
-    function handleSaveClassAssignment(event) {
+    async function handleSaveClassAssignment(event) {
       event.preventDefault();
       const idx = parseInt(document.getElementById("assignTeacherIdx").value, 10);
       if (isNaN(idx) || !teachersDb[idx]) return;
@@ -926,6 +1022,11 @@
       teachersDb[idx].grade = newGrade;
       teachersDb[idx].role = newRole;
       teachersDb[idx].subject = newSubject;
+
+      if (window.DahamPasalaAPI) {
+        const { pin, ...teacherPayload } = teachersDb[idx];
+        await DahamPasalaAPI.saveTeacher(teacherPayload);
+      }
 
       persistAllAdminData();
       renderAdminTeachers();
@@ -943,14 +1044,15 @@
       const idInput = document.getElementById("newTeacherId");
       idInput.readOnly = false;
       idInput.style.backgroundColor = "";
-      const nextId = `TCH/2026/0${teachersDb.length + 1}`;
-      idInput.value = nextId;
+      idInput.value = getNextTeacherId();
 
       document.getElementById("newTeacherGrade").value = "10 ශ්‍රේණිය";
       document.getElementById("newTeacherName").value = "";
       document.getElementById("newTeacherSubject").value = "";
       document.getElementById("newTeacherPhone").value = "";
-      document.getElementById("newTeacherPin").value = "1234";
+      const pinInput = document.getElementById("newTeacherPin");
+      pinInput.value = "1234";
+      pinInput.placeholder = "1234";
       document.getElementById("addTeacherModal").style.display = "flex";
     }
 
@@ -976,7 +1078,9 @@
       document.getElementById("newTeacherName").value = t.name || "";
       document.getElementById("newTeacherSubject").value = t.subject || "";
       document.getElementById("newTeacherPhone").value = t.phone || "";
-      document.getElementById("newTeacherPin").value = t.pin || "1234";
+      const pinInput = document.getElementById("newTeacherPin");
+      pinInput.value = "";
+      pinInput.placeholder = "වෙනස් නොකරන්නේ නම් හිස්ව තබන්න";
       document.getElementById("addTeacherModal").style.display = "flex";
     }
 
@@ -985,68 +1089,95 @@
       editingTeacherIdx = null;
     }
 
-    function handleSaveNewTeacher(event) {
+    async function handleSaveNewTeacher(event) {
       event.preventDefault();
       const id = document.getElementById("newTeacherId").value.trim();
       const grade = document.getElementById("newTeacherGrade").value;
       const name = document.getElementById("newTeacherName").value.trim();
       const subject = document.getElementById("newTeacherSubject").value.trim();
       const phone = document.getElementById("newTeacherPhone").value.trim();
-      const pin = document.getElementById("newTeacherPin").value.trim() || "1234";
+      const rawPin = document.getElementById("newTeacherPin").value.trim();
       const photo = document.getElementById("newTeacherPhotoData").value || DEFAULT_TEACHER_PHOTO;
 
-      const isEditing = editingTeacherIdx !== null;
-
-      if (isEditing && teachersDb[editingTeacherIdx]) {
-        const prev = teachersDb[editingTeacherIdx];
-        teachersDb[editingTeacherIdx] = {
-          ...prev,
-          name: name,
-          grade: grade,
-          subject: subject,
-          phone: phone,
-          pin: pin,
-          photo: photo,
-          avatar: photo
-        };
-      } else {
-        teachersDb.push({
-          id: id,
-          name: name,
-          grade: grade,
-          subject: subject,
-          phone: phone,
-          pin: pin,
-          role: "පන්තිභාර ආචාර්ය",
-          status: "ක්‍රියාකාරී",
-          photo: photo,
-          avatar: photo
-        });
+      if (!id || !name) {
+        alert("කරුණාකර ආචාර්ය අංකය සහ නම ඇතුළත් කරන්න.");
+        return;
       }
 
-      if (window.DahamPasalaAPI) {
-        const teacherObj = isEditing ? teachersDb[editingTeacherIdx] : teachersDb[teachersDb.length - 1];
-        DahamPasalaAPI.saveTeacher(teacherObj);
+      const isEditing = editingTeacherIdx !== null && Boolean(teachersDb[editingTeacherIdx]);
+      const pinToSave = isEditing ? (rawPin || undefined) : (rawPin || "1234");
+      const prev = isEditing ? teachersDb[editingTeacherIdx] : {};
+
+      const teacherPayload = {
+        ...prev,
+        id: id,
+        name: name,
+        grade: grade,
+        subject: subject,
+        phone: phone,
+        role: prev.role || "පන්තිභාර ආචාර්ය",
+        status: prev.status || "ක්‍රියාකාරී",
+        photo: photo,
+        avatar: photo
+      };
+      if (pinToSave !== undefined) {
+        teacherPayload.pin = pinToSave;
+      } else {
+        delete teacherPayload.pin;
       }
 
-      persistAllAdminData();
-      renderAdminDashboard();
-      renderAdminTeachers();
-      closeAddTeacherModal();
-      
-      if (isEditing) {
-        alert(`ආචාර්ය ${name} (${id}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
-      } else {
-        alert(`ආචාර්ය ${name} (${id}) සාර්ථකව පත් කරන ලදී!`);
+      const submitBtn = document.getElementById("saveTeacherSubmitBtn");
+      const prevBtnHtml = submitBtn ? submitBtn.innerHTML : "";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> සුරකිමින්...';
+      }
+
+      try {
+        let savedRecord = teacherPayload;
+        if (window.DahamPasalaAPI) {
+          const apiResult = await DahamPasalaAPI.saveTeacher(teacherPayload);
+          if (apiResult && apiResult._backendError) {
+            console.warn("Teacher backend save warning:", apiResult._backendError);
+          }
+          if (apiResult) {
+            const { _savedToBackend, _backendError, ...cleanSaved } = apiResult;
+            savedRecord = { ...teacherPayload, ...cleanSaved };
+          }
+        }
+
+        if (isEditing) {
+          teachersDb[editingTeacherIdx] = savedRecord;
+        } else {
+          const existingIdx = teachersDb.findIndex(t => t && t.id === id);
+          if (existingIdx >= 0) teachersDb[existingIdx] = savedRecord;
+          else teachersDb.push(savedRecord);
+        }
+
+        persistAllAdminData();
+        renderAdminDashboard();
+        renderAdminTeachers();
+        closeAddTeacherModal();
+
+        if (isEditing) {
+          alert(`ආචාර්ය ${name} (${id}) ගේ තොරතුරු සහ ඡායාරූපය සාර්ථකව යාවත්කාලීන විය!`);
+        } else {
+          alert(`ආචාර්ය ${name} (${id}) සාර්ථකව පත් කරන ලදී!`);
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = prevBtnHtml;
+        }
       }
     }
 
-    function deleteTeacher(index) {
+    async function deleteTeacher(index) {
       if (confirm("මෙම ආචාර්යවරයා ඉවත් කිරීමට ඔබට විශ්වාසද?")) {
         const teacherId = teachersDb[index]?.id;
         teachersDb.splice(index, 1);
         if (window.DahamPasalaAPI && teacherId) {
-          DahamPasalaAPI.deleteTeacher(teacherId);
+          await DahamPasalaAPI.deleteTeacher(teacherId);
         }
         persistAllAdminData();
         renderAdminDashboard();

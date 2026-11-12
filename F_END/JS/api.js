@@ -421,22 +421,30 @@
       local[regNo] = { ...(local[regNo] || {}), ...studentData };
       setLocal(StorageKeys.STUDENTS, local);
 
-      if (isBackendOnline) {
+      const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+      if (!isFileProto) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/students`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(studentData)
           });
+          const json = await res.json().catch(() => ({}));
           if (res.ok) {
-            const json = await res.json();
-            return json.data || studentData;
+            isBackendOnline = true;
+            DahamPasalaAPI.renderStatusBadge();
+            const saved = json.data || studentData;
+            local[regNo] = { ...(local[regNo] || {}), ...saved };
+            setLocal(StorageKeys.STUDENTS, local);
+            return { ...saved, _savedToBackend: true };
           }
+          return { ...local[regNo], _savedToBackend: false, _backendError: json.message || json.error || `HTTP ${res.status}` };
         } catch (e) {
           console.warn('API saveStudent failed, saved to localStorage:', e);
+          return { ...local[regNo], _savedToBackend: false, _backendError: e.message };
         }
       }
-      return local[regNo];
+      return { ...local[regNo], _savedToBackend: false };
     },
 
     async deleteStudent(regNo) {
@@ -446,7 +454,8 @@
         setLocal(StorageKeys.STUDENTS, local);
       }
 
-      if (isBackendOnline) {
+      const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+      if (!isFileProto) {
         try {
           await fetchWithTimeout(`${API_BASE}/students/${encodeURIComponent(regNo)}`, {
             method: 'DELETE'
@@ -644,22 +653,33 @@
       }
       setLocal(StorageKeys.TEACHERS, local);
 
-      if (isBackendOnline) {
+      const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+      if (!isFileProto) {
         try {
           const res = await fetchWithTimeout(`${API_BASE}/teachers`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(teacherData)
           });
+          const json = await res.json().catch(() => ({}));
           if (res.ok) {
-            const json = await res.json();
-            return json.data || teacherData;
+            isBackendOnline = true;
+            DahamPasalaAPI.renderStatusBadge();
+            const saved = json.data || teacherData;
+            const latestLocal = getLocal(StorageKeys.TEACHERS, []);
+            const sIdx = latestLocal.findIndex(t => t.id === saved.id);
+            if (sIdx >= 0) latestLocal[sIdx] = { ...latestLocal[sIdx], ...saved };
+            else latestLocal.push(saved);
+            setLocal(StorageKeys.TEACHERS, latestLocal);
+            return { ...saved, _savedToBackend: true };
           }
+          return { ...teacherData, _savedToBackend: false, _backendError: json.message || json.error || `HTTP ${res.status}` };
         } catch (e) {
           console.warn('API saveTeacher failed:', e);
+          return { ...teacherData, _savedToBackend: false, _backendError: e.message };
         }
       }
-      return teacherData;
+      return { ...teacherData, _savedToBackend: false };
     },
 
     async deleteTeacher(id) {
@@ -667,7 +687,8 @@
       local = local.filter(t => t.id !== id);
       setLocal(StorageKeys.TEACHERS, local);
 
-      if (isBackendOnline) {
+      const isFileProto = typeof window !== 'undefined' && window.location && window.location.protocol === 'file:';
+      if (!isFileProto) {
         try {
           await fetchWithTimeout(`${API_BASE}/teachers/${encodeURIComponent(id)}`, {
             method: 'DELETE'

@@ -653,7 +653,6 @@
         <div class="form-group">
           <label>අදාළ ශ්‍රේණිය (Grade / Class):</label>
           <select id="newStudentGrade" class="student-filter-select" required>
-            <option value="10 ශ්‍රේණිය (Grade 10)">10 ශ්‍රේණිය (Grade 10)</option>
             <option value="1 ශ්‍රේණිය (Grade 1)">1 ශ්‍රේණිය (Grade 1)</option>
             <option value="2 ශ්‍රේණිය (Grade 2)">2 ශ්‍රේණිය (Grade 2)</option>
             <option value="3 ශ්‍රේණිය (Grade 3)">3 ශ්‍රේණිය (Grade 3)</option>
@@ -663,8 +662,6 @@
             <option value="7 ශ්‍රේණිය (Grade 7)">7 ශ්‍රේණිය (Grade 7)</option>
             <option value="8 ශ්‍රේණිය (Grade 8)">8 ශ්‍රේණිය (Grade 8)</option>
             <option value="9 ශ්‍රේණිය (Grade 9)">9 ශ්‍රේණිය (Grade 9)</option>
-            <option value="8 ශ්‍රේණිය (Grade 8)">8 ශ්‍රේණිය (Grade 8)</option>
-            <option value="7 ශ්‍රේණිය (Grade 7)">7 ශ්‍රේණිය (Grade 7)</option>
             <option value="10 ශ්‍රේණිය (Grade 10)" selected>10 ශ්‍රේණිය (Grade 10)</option>
             <option value="අවසාන ශ්‍රේණිය (Daham School Final)">අවසාන ශ්‍රේණිය (Daham School Final)</option>
             <option value="ධර්මාචාර්ය (Teaching Exam)">ධර්මාචාර්ය (Teaching Exam)</option>
@@ -676,27 +673,27 @@
         </div>
         <div class="form-group">
           <label>Full Name in English:</label>
-          <input type="text" id="newStudentEnglishName" placeholder="e.g. Kavindu Malith Wijerathne" required>
+          <input type="text" id="newStudentEnglishName" placeholder="e.g. Kavindu Malith Wijerathne">
         </div>
         <div class="form-group">
           <label>උපන් දිනය (DOB):</label>
-          <input type="date" id="newStudentDob" value="2011-05-15" required>
+          <input type="date" id="newStudentDob" value="2011-05-15">
         </div>
         <div class="form-group">
           <label>ප්‍රවේශ මුරපදය / PIN:</label>
-          <input type="text" id="newStudentPin" value="1234" required>
+          <input type="text" id="newStudentPin" value="1234">
         </div>
         <div class="form-group">
           <label>මව්පිය / භාරකරුගේ නම:</label>
-          <input type="text" id="newStudentGuardian" placeholder="උදා: එස්. කේ. විජේරත්න මයා" required>
+          <input type="text" id="newStudentGuardian" placeholder="උදා: එස්. කේ. විජේරත්න මයා">
         </div>
         <div class="form-group">
           <label>හදිසි ඇමතුම් අංකය (Contact Phone):</label>
-          <input type="text" id="newStudentContact" placeholder="077 123 4567" required>
+          <input type="text" id="newStudentContact" placeholder="077 123 4567">
         </div>
         <div class="form-group" style="grid-column: span 2;">
           <label>ස්ථිර ලිපිනය (Address):</label>
-          <input type="text" id="newStudentAddress" placeholder="නො. 12, විහාර පාර, කොළඹ 05" required>
+          <input type="text" id="newStudentAddress" placeholder="නො. 12, විහාර පාර, කොළඹ 05">
         </div>
         <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
           <button type="button" class="btn-modal-cancel" onclick="closeAddStudentModal()">අවලංගු කරන්න</button>
@@ -744,7 +741,6 @@
         <div class="form-group">
           <label>භාර ශ්‍රේණිය (Assigned Grade):</label>
           <select id="newTeacherGrade" class="student-filter-select" required>
-            <option value="10 ශ්‍රේණිය">10 ශ්‍රේණිය (Grade 10)</option>
             <option value="1 ශ්‍රේණිය">1 ශ්‍රේණිය (Grade 1)</option>
             <option value="2 ශ්‍රේණිය">2 ශ්‍රේණිය (Grade 2)</option>
             <option value="3 ශ්‍රේණිය">3 ශ්‍රේණිය (Grade 3)</option>
@@ -754,8 +750,6 @@
             <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
             <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
             <option value="9 ශ්‍රේණිය">9 ශ්‍රේණිය (Grade 9)</option>
-            <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
-            <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
             <option value="10 ශ්‍රේණිය" selected>10 ශ්‍රේණිය (Grade 10)</option>
             <option value="අවසාන ශ්‍රේණිය">අවසාන ශ්‍රේණිය (Daham School Final)</option>
             <option value="ධර්මාචාර්ය">ධර්මාචාර්ය (Teaching Exam)</option>
@@ -768,15 +762,15 @@
         </div>
         <div class="form-group">
           <label>උගන්වන ප්‍රධාන විෂය (Subject):</label>
-          <input type="text" id="newTeacherSubject" placeholder="උදා: බුද්ධ ධර්මය සහ පාලි භාෂාව" required>
+          <input type="text" id="newTeacherSubject" placeholder="උදා: බුද්ධ ධර්මය සහ පාලි භාෂාව">
         </div>
         <div class="form-group">
           <label>දුරකථන අංකය (Contact No):</label>
-          <input type="text" id="newTeacherPhone" placeholder="071 234 5678" required>
+          <input type="text" id="newTeacherPhone" placeholder="071 234 5678">
         </div>
         <div class="form-group">
           <label>පිවිසුම් මුරපදය (PIN):</label>
-          <input type="text" id="newTeacherPin" value="1234" required>
+          <input type="text" id="newTeacherPin" value="1234">
         </div>
         <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
           <button type="button" class="btn-modal-cancel" onclick="closeAddTeacherModal()">අවලංගු කරන්න</button>
@@ -806,7 +800,6 @@
         <div class="form-group">
           <label>පවරන ශ්‍රේණිය (Assign Class / Grade):</label>
           <select id="assignTeacherGrade" class="student-filter-select" required>
-            <option value="10 ශ්‍රේණිය">10 ශ්‍රේණිය (Grade 10)</option>
             <option value="1 ශ්‍රේණිය">1 ශ්‍රේණිය (Grade 1)</option>
             <option value="2 ශ්‍රේණිය">2 ශ්‍රේණිය (Grade 2)</option>
             <option value="3 ශ්‍රේණිය">3 ශ්‍රේණිය (Grade 3)</option>
@@ -816,9 +809,6 @@
             <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
             <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
             <option value="9 ශ්‍රේණිය">9 ශ්‍රේණිය (Grade 9)</option>
-            <option value="8 ශ්‍රේණිය">8 ශ්‍රේණිය (Grade 8)</option>
-            <option value="7 ශ්‍රේණිය">7 ශ්‍රේණිය (Grade 7)</option>
-            <option value="6 ශ්‍රේණිය">6 ශ්‍රේණිය (Grade 6)</option>
             <option value="10 ශ්‍රේණිය" selected>10 ශ්‍රේණිය (Grade 10)</option>
             <option value="අවසාන ශ්‍රේණිය">අවසාන ශ්‍රේණිය (Daham School Final)</option>
             <option value="ධර්මාචාර්ය">ධර්මාචාර්ය (Teaching Exam)</option>
