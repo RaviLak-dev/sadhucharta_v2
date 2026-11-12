@@ -84,7 +84,7 @@ function normalizeRequestUrl(req) {
     return;
   }
 
-  if (parsed.pathname === '/api' || parsed.pathname === '/api/') {
+  if (parsed.pathname === '/api' || parsed.pathname === '/api/' || parsed.pathname === '/api/index') {
     const headerUri = req.headers['x-vercel-original-url'] || req.headers['x-forwarded-uri'];
     if (headerUri && String(headerUri).startsWith('/api/')) {
       req.url = String(headerUri);
