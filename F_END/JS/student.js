@@ -1549,9 +1549,13 @@
         <html>
           <head>
             <title>කුසලතා සම්මාන සහතිකය - ${selectedBadgeForModal ? selectedBadgeForModal.badge : ''}</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.cdnfonts.com/css/google-sans" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
-              body { font-family: 'Inter', sans-serif; padding: 40px; text-align: center; color: #1e293b; }
+              body { font-family: 'Google Sans', 'Product Sans', 'Poppins', 'Noto Sans Sinhala', 'Roboto', sans-serif; padding: 40px; text-align: center; color: #1e293b; }
               .badge-icon-wrap { width: 80px; height: 80px; margin: 15px auto; border-radius: 50%; display: grid; place-items: center; font-size: 2.2rem; }
               .badge-gold { background: #fef3c7; color: #b45309; border: 2px solid #f59e0b; }
               .badge-silver { background: #f1f5f9; color: #475569; border: 2px solid #94a3b8; }

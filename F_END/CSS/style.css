@@ -1,5 +1,7 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* Google Fonts: Google Sans, Poppins, Noto Sans Sinhala, and Roboto */
+@import url('https://fonts.cdnfonts.com/css/google-sans');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap');
 
 :root {
   --primary-blue: #1e3a8a;
@@ -18,8 +20,12 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Noto Sans Sinhala', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Iskoola Pota', 'Nirmala UI', sans-serif;
+  font-family: 'Google Sans', 'Product Sans', 'Poppins', 'Noto Sans Sinhala', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   letter-spacing: normal;
+}
+
+body, button, input, select, textarea, optgroup {
+  font-family: 'Google Sans', 'Product Sans', 'Poppins', 'Noto Sans Sinhala', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 body {
@@ -1504,7 +1510,7 @@ body.onboarding-page {
 
 .final-report-paper,
 .final-report-paper * {
-  font-family: 'Noto Sans Sinhala', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Iskoola Pota', 'Nirmala UI', sans-serif !important;
+  font-family: 'Google Sans', 'Product Sans', 'Poppins', 'Noto Sans Sinhala', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
   letter-spacing: normal !important;
   word-spacing: normal !important;
 }
