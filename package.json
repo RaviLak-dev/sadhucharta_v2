@@ -5,8 +5,7 @@
   "main": "B_END/server.js",
   "scripts": {
     "start": "node B_END/server.js",
-    "test": "node B_END/test.js",
-    "postinstall": "cd B_END && npm install"
+    "test": "node B_END/test.js"
   },
   "keywords": [
     "daham-pasala",
@@ -21,6 +20,6 @@
     "mongoose": "^9.9.5"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": "22.x"
   }
 }

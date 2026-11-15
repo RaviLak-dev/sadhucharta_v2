@@ -1853,7 +1853,7 @@
           <strong>විභාග මණ්ඩල සටහන:</strong> ධර්ම විභාග සඳහා පෙනී සිටි සිසුන් <strong>${filteredKeys.length}</strong> ගෙන් 100% ක්ම සමත් මට්ටම ඉක්මවා විශිෂ්ට සාමාර්ථ (A) වාර්තා කර ඇත.
         `;
       } else if (type === "deeds") {
-        titleHeading.textContent = "ශිෂ්‍ය සාධුවරයා යහපත් චර්යා සහ කුසලතා ලකුණු සංග්‍රහය (Character Compendium)";
+        titleHeading.textContent = "ශිෂ්‍ය සාධු චර්යා සහ කුසලතා ලකුණු සංග්‍රහය (Character Compendium)";
         subtitle.textContent = `2026 වර්ෂය - විෂය සමගාමී හා ප්‍රායෝගික ක්‍රියාකාරකම් | දිනය: ${today}`;
         thead.innerHTML = `
           <tr>
@@ -1884,7 +1884,7 @@
         }).join("");
 
         summaryBox.innerHTML = `
-          <strong>චර්යා ඇගයීම් සටහන:</strong> පාසල් විනය සහ ගුරු දෙගුරු ගෞරවය පෙරදැරිව ආදර්ශමත් ශිෂ්‍ය පරපුරක් නිර්මාණය කිරීමේ සාධුවරයා පරමාර්ථ සාර්ථකව ඉටු වී ඇත.
+          <strong>චර්යා ඇගයීම් සටහන:</strong> පාසල් විනය සහ ගුරු දෙගුරු ගෞරවය පෙරදැරිව ආදර්ශමත් ශිෂ්‍ය පරපුරක් නිර්මාණය කිරීමේ සාධු චර්යා පරමාර්ථ සාර්ථකව ඉටු වී ඇත.
         `;
       } else if (type === "teachers") {
         titleHeading.textContent = "ආචාර්ය මණ්ඩල සේවා සහ පන්ති භාරකාරීත්ව වාර්තාව (Faculty Report)";

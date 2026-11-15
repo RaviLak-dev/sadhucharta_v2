@@ -209,7 +209,7 @@
             : (backendDbType === 'mongodb'
               ? 'MongoDB දත්ත සමුදාය සක්‍රීයයි'
               : `Firebase සම්බන්ධ නොවී Memory Fallback භාවිතා වේ${backendConnectionError ? ' (' + backendConnectionError + ')' : ''}`);
-          const offlineMsg = `ℹ️ Backend නොබැඳි මාදිලියේ ඇත (Browser Local Mode)${backendConnectionError ? ' — ' + backendConnectionError : ''}`;
+          const offlineMsg = `ℹ️ Backend නොබැඳි මාදිලියේ ඇත (Browser Local Mode) [${API_BASE}/health]${backendConnectionError ? ' — ' + backendConnectionError : ''}`;
           DahamPasalaAPI.showToast(isBackendOnline ? `✅ Backend සම්බන්ධයි: ${dbLabel}` : offlineMsg);
         });
 

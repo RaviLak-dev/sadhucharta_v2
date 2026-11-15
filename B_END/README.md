@@ -1,6 +1,6 @@
 # Daham Pasala Sadhu Charya - Backend Server (B_END)
 
-දහම් පාසල් ශිෂ්‍ය සාධුවරයා ඩිජිටල් පද්ධතියේ REST API පසුපස අන්තය (Backend Server).
+දහම් පාසල් ශිෂ්‍ය සාධු චර්යා ඩිජිටල් පද්ධතියේ REST API පසුපස අන්තය (Backend Server).
 
 ## 🚀 Quick Start (ආරම්භ කිරීම)
 

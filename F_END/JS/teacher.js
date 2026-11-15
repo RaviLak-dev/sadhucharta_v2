@@ -606,7 +606,7 @@
         "good-deeds": { id: "teacher-good-deeds", title: "යහපත් ක්‍රියාකාරකම් සටහන් කිරීම (Record Good Deeds)" },
         "observations": { id: "teacher-observations", title: "ශිෂ්‍ය චර්යා නිරීක්ෂණ සහ ඇගයීම (Behavior Observations)" },
         "study-materials": { id: "teacher-study-materials", title: "ධර්ම අධ්‍යයන නිබන්ධන එක් කිරීම (Study Materials)" },
-        "badges": { id: "teacher-badges", title: "සාධුවරයා පදක්කම් සහ කුසලතා ලකුණු ප්‍රදානය (Badges & Points)" },
+        "badges": { id: "teacher-badges", title: "සාධු චර්යා පදක්කම් සහ කුසලතා ලකුණු ප්‍රදානය (Badges & Points)" },
         "recommendations": { id: "teacher-recommendations", title: "නිල ගුරු නිර්දේශ සහ වාර්ෂික ඇගයීම් (Recommendations)" },
         "exams": { id: "teacher-exams", title: "වාර විභාග ලකුණු ඇතුළත් කිරීම (Term Exam Marks Entry)" }
       };

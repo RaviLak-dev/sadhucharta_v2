@@ -958,7 +958,7 @@
       const principalName = activeStudent.principalName || "පූජ්‍ය මාදම්පේ සුමනසාර නාහිමි";
 
       if (document.getElementById("repDocSchoolName")) document.getElementById("repDocSchoolName").textContent = `${schoolName} - වාර්ෂික අධ්‍යයන අංශය`;
-      if (document.getElementById("repDocTitleBadge")) document.getElementById("repDocTitleBadge").textContent = `දහම් පාසල් ශිෂ්‍ය සාධුවරයා - ${termLabel} (${selectedYear})`;
+      if (document.getElementById("repDocTitleBadge")) document.getElementById("repDocTitleBadge").textContent = `දහම් පාසල් ශිෂ්‍ය සාධු චර්යා - ${termLabel} (${selectedYear})`;
 
       if (document.getElementById("repMetaStudentName")) document.getElementById("repMetaStudentName").textContent = activeStudent.name || "-";
       if (document.getElementById("repMetaRegNo")) document.getElementById("repMetaRegNo").textContent = activeStudent.regNo || "-";
